@@ -1,0 +1,70 @@
+---
+title: 'Ch2: Statistical Learning Labs and Exercises'
+author: "Kylie"
+date: "30/03/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse) # loads packages including ggplot2
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Labs
+
+## 2.3.2 Graphics
+
+An alternative to the suggested `plot` is to use `ggplot`. `ggplot` is useful for more complicated plots. 
+
+```{r plot}
+x = rnorm(100) # setting x to a vector of 100 random numbers with a mean of 0 and a standard deviation of 1
+y = rnorm(100)
+
+# Using plot to plot a scatterplot:
+plot(x, y)
+plot(x, y, xlab = "this is the x-axis", ylab = "this is the y-axis",
+     main = "Plot of X vs Y")
+
+# Alternatively, using ggplot to plot a scatterplot
+# Need to make a data frame or tibble for the data we want to plot with ggplot:
+data = tibble(y,x)
+
+ggplot(data, aes(x, y)) +
+  geom_point() +
+  labs(xlab = "this is the x-axis", ylab = "this is the y-axis",
+       title = "ggplot2 Plot of X vs Y")
+
+```
+
+It is easy to save plots created using `ggplot` as many different file types.
+
+```{r plot_save}
+x = rnorm(100) # setting x to a vector of 100 random numbers with a mean of 0 and a standard deviation of 1
+y = rnorm(100)
+# Need to make a data frame or tibble for the data we want to plot with ggplot:
+data = tibble(y,x)
+
+# Saving plot as pdf:
+pdf ("Figure.pdf")
+plot(x,y,col = "green")
+dev.off ()
+
+# Alternatively, saving ggplot using ggsave
+ggplot(data, aes(x, y)) +
+  geom_point(color = "green") +
+  labs(xlab = "this is the x-axis", ylab = "this is the y-axis",
+       title = "ggplot2 Plot of X vs Y")
+ggsave("Figure_ggplot.pdf")
+
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
