@@ -50,21 +50,33 @@ plot(x,y,col = "green")
 dev.off ()
 
 # Alternatively, saving ggplot using ggsave
-ggplot(data, aes(x, y)) +
+a <- ggplot(data, aes(x, y)) +
   geom_point(color = "green") +
   labs(xlab = "this is the x-axis", ylab = "this is the y-axis",
        title = "ggplot2 Plot of X vs Y")
-ggsave("Figure_ggplot.pdf")
+ggsave("Figure_ggplot.pdf", a)
+
+```
+This section is not finished
+
+## 2.3.4 Loading Data
+
+Here are some alternatives to `read.table()`:
+
+```{r load}
+# Importing .data file:
+Auto <- read.table ("Auto.data", header = T, na.strings = "?")
+fix(Auto)
+
+read_delim("Auto.data", delim = "
+           ") #seems more complicated than read.table
+
+# Importing .csv file:
+Auto <- read.csv("Auto.csv", header =T,na.strings ="?") # Auto is a data frame
+
+Auto_2 <- read_csv("Auto.csv") # Auto_2 is a tibble. Don't need to specify that there is a header, missing values ("?") are imported as NA automatically
+
 
 ```
 
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## 2.3.5 Additional Graphical and Numerical Summaries
