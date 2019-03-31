@@ -12,6 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Labs
 
+In general you should use `<-` instead of `=` to assign values to variables, etc.
+
 ## 2.3.2 Graphics
 
 An alternative to the suggested `plot` is to use `ggplot`. `ggplot` is useful for more complicated plots. 
@@ -57,7 +59,37 @@ a <- ggplot(data, aes(x, y)) +
 ggsave("Figure_ggplot.pdf", a)
 
 ```
-This section is not finished
+
+```{r contour}
+x <- seq(-pi ,pi ,length =50)
+y <- x
+f <- outer(x, y, function(x, y) cos(y)/(1 + x^2))
+fa <- (f-t(f))/2
+
+data <- tibble(x, y, fa)
+
+# Using contour:
+contour(x, y, f) # basic contour plot
+contour(x, y, f, nlevels = 45, add=T)
+contour (x, y, fa, nlevels = 15)
+
+# Contour seems to be a better option than the ggplot version
+```
+
+```{r image}
+# Using image:
+image(x, y, fa)
+
+# Alternatively using ggplot and geom_tile
+ggplot(data, aes(x = x, y = y, fill = fa)) +
+  geom_tile()
+
+persp(x, y, fa)
+persp(x, y, fa, theta =30)
+persp(x, y, fa, theta =30, phi =20)
+persp(x, y, fa, theta =30, phi =70)
+persp(x, y, fa, theta =30, phi =40)
+```
 
 ## 2.3.4 Loading Data
 
