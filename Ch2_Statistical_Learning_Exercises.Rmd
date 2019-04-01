@@ -1,0 +1,86 @@
+---
+title: 'Ch2: Statistical Learning Applied Exercises'
+author: "Kylie"
+date: "30/03/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse) # loads packages including ggplot2, dplyr
+```
+
+# Exercise 8
+
+# Exercise 9
+
+This exercise involves the Auto data set studied in the lab. Make sure
+that the missing values have been removed from the data.
+
+**(a) Which of the predictors are quantitative, and which are qualitative?**
+
+```{r 9_a}
+Auto <- read_csv("Auto.csv", na = c("", "NA", "?")) # loading data, making sure missing values (?s) are imported correctly
+Auto <- na.omit(Auto) # removing missing values
+sum(is.na(Auto)) # checking for missing values (this should be zero)
+
+Auto <- mutate_if(Auto, is.character, factor) # converting characters to factors
+Auto <- mutate(Auto, origin = as.factor(origin)) #converting origin to factor
+```
+
+Use `View(Auto)` to have a look at all of the data.
+
+`mpg`, `displacement`, `horsepower`, `weight`, `acceleration`, and `year` are quantitative variables. `origin` and `name` are qualitative. `cylinder` appears to be quantiative, but only takes a few vaues (`r unique(as.factor(Auto$cylinders))`), so it may be better to treat this as a qualitative variable
+
+**(b) What is the range of each quantitative predictor? You can answer this using the `range()` function.**
+
+Including `cylinder` as quantitative for now.
+
+```{r 9_b}
+
+max_Auto <- summarise_if(Auto, is.numeric, list(max)) # calculating max for all numeric variables in Auto
+
+min_Auto <- summarise_if(Auto, is.numeric, list(min)) # calculating min for all numeric variables in Auto
+
+(range_Auto <- max_Auto - min_Auto) # evaluating and displaying range
+```
+**(c) What is the mean and standard deviation of each quantitative predictor?**
+
+```{r 9_c}
+# Mean:
+(mean_Auto <- summarise_if(Auto, is.numeric, list(mean))) # calculating and displaying mean for all numeric variables in Auto
+# Standard deviation:
+(sd_Auto <- summarise_if(Auto, is.numeric, list(sd))) # calculating and displaying mean for all numeric variables in Auto
+```
+
+**(d) Now remove the 10th through 85th observations. What is the range, mean, and standard deviation of each predictor in the subset of the data that remains?**
+
+```{r 9_d}
+# Removing 10th to 85th observations:
+Auto_short <- slice(Auto, -10:-85) # negatives indicate the rows should be dropped
+
+# Range calculation:
+max_Auto <- summarise_if(Auto_short, is.numeric, list(max)) # calculating max for all numeric variables in Auto
+min_Auto <- summarise_if(Auto_short, is.numeric, list(min)) # calculating min for all numeric variables in Auto
+(range_Auto <- max_Auto - min_Auto) # evaluating and displaying range
+
+# Mean:
+(mean_Auto <- summarise_if(Auto_short, is.numeric, list(mean))) # calculating and displaying mean for all numeric variables in Auto
+
+# Standard deviation:
+(sd_Auto <- summarise_if(Auto_short, is.numeric, list(sd))) # calculating and displaying mean for all numeric variables in Auto
+```
+
+**(e) Using the full data set, investigate the predictors graphically, using scatterplots or other tools of your choice. Create some plots highlighting the relationships among the predictors. Comment on your findings.**
+
+**(f) Suppose that we wish to predict gas mileage (mpg) on the basis of the other variables. Do your plots suggest that any of the
+other variables might be useful in predicting mpg? Justify your answer.**
+
+# Exercise 10
+
+# New packages/functions 
+
+New packages/functions I've learnt during these exercises:
+
+- `summarise_if`
+- `slice`
