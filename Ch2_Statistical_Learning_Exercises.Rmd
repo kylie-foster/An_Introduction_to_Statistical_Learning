@@ -8,8 +8,11 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 #install.packages("GGally")
+#install.packages("skimr")
+library (MASS)
 library(GGally) # for ggpairs
 library(tidyverse) # loads packages including ggplot2, dplyr
+library(skimr)
 ```
 
 # Exercise 8
@@ -126,29 +129,85 @@ as_tibble(Boston)
 ?Boston
 ```
 
-The data set has 506 rows and 14 columns. The rows are observations. The columns represent the following variables:
-- `crim`: per capita crime rate by town.
-- `zn`: proportion of residential land zoned for lots over 25,000 sq.ft.
-- `indus`: proportion of non-retail business acres per town.
-- `chas`: Charles River dummy variable (= 1 if tract bounds river; 0 otherwise).
-- `nox`: nitrogen oxides concentration (parts per 10 million).
-- `rm`: average number of rooms per dwelling.
-- `age`: proportion of owner-occupied units built prior to 1940.
-- `dis`: weighted mean of distances to five Boston employment centres.
-- `rad`: index of accessibility to radial highways.
-- `tax`: full-value property-tax rate per \$10,000.
-- `ptratio`: pupil-teacher ratio by town.
-- `black`: 1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town.
-- `lstat`: lower status of the population (percent).
-- `medv`: median value of owner-occupied homes in \$1000s.
+The data set has 506 rows and 14 columns. The rows represent towns. The columns represent the following variables:
+
+ - `crim`: per capita crime rate by town.
+ - `zn`: proportion of residential land zoned for lots over 25,000 sq.ft.
+ - `indus`: proportion of non-retail business acres per town.
+ - `chas`: Charles River dummy variable (= 1 if tract bounds river; 0 otherwise).
+ - `nox`: nitrogen oxides concentration (parts per 10 million).
+ - `rm`: average number of rooms per dwelling.
+ - `age`: proportion of owner-occupied units built prior to 1940.
+ - `dis`: weighted mean of distances to five Boston employment centres.
+ - `rad`: index of accessibility to radial highways.
+ - `tax`: full-value property-tax rate per \$10,000.
+ - `ptratio`: pupil-teacher ratio by town.
+ - `black`: 1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town.
+ - `lstat`: lower status of the population (percent).
+ - `medv`: median value of owner-occupied homes in \$1000s.
 
 **(b) Make some pairwise scatterplots of the predictors (columns) in this data set. Describe your findings.**
 
+```{r 10_b, fig.height = 20, fig.width = 15}
+Boston_10b <- as_tibble(Boston) %>%
+  mutate_if(is.integer, factor) # converting integers to factors
+
+# Plotting matrix of pair-wise scatterplots of all variables
+ggpairs(Boston_10b) 
+
+```
+
 **(c) Are any of the predictors associated with per capita crime rate? If so, explain the relationship.**
+
+```{r 10_c, fig.height = 20}
+Boston_wrap <- as_tibble(Boston) %>%
+  gather(-crim, key = "vars", value = "values") # getting data in the right format to use for facet_wrap. Excluding `name` because including it messes up the x-axes for facet_wrap 
+
+  ggplot(Boston_wrap, aes(x = values, y = crim)) +
+    geom_point() +
+    facet_wrap(~ vars, scales = "free_x", ncol = 2)
+
+```
 
 **(d) Do any of the suburbs of Boston appear to have particularly high crime rates? Tax rates? Pupil-teacher ratios? Comment on the range of each predictor.**
 
+```{r 10_d}
+Boston_10d <- as_tibble(Boston) %>%
+  mutate_if(is.integer, factor)# converting integers to factors
+
+ggplot(Boston_10d) + 
+  geom_histogram(mapping = aes(x = crim))
+
+ggplot(Boston_10d, mapping = aes(y = crim)) +
+  geom_boxplot()
+
+ggplot(Boston_10d) + 
+  geom_histogram(mapping = aes(x = tax))
+
+ggplot(Boston_10d, mapping = aes(y = tax)) +
+  geom_boxplot()
+
+ggplot(Boston_10d) + 
+  geom_histogram(mapping = aes(x = ptratio))
+
+ggplot(Boston_10d, mapping = aes(y = ptratio)) +
+  geom_boxplot()
+
+skim(Boston_10d)
+```
+
+
 **(e) How many of the suburbs in this data set bound the Charles river?**
+
+`r sum(Boston$chas)` suburbs bound the Charles River.
+
+**(f) What is the median pupil-teacher ratio among the towns in this data set?**
+
+Median = `r median(Boston$ptratio)`
+
+**(g) Which suburb of Boston has lowest median value of owneroccupied homes? What are the values of the other predictors for that suburb, and how do those values compare to the overall ranges for those predictors? Comment on your findings.**
+
+**(h) In this data set, how many of the suburbs average more than seven rooms per dwelling? More than eight rooms per dwelling? Comment on the suburbs that average more than eight rooms per dwelling.**
 
 # New packages/functions 
 
