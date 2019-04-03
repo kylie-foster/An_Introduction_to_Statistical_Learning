@@ -7,6 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+#install.packages("GGally")
+library(GGally) # for ggpairs
 library(tidyverse) # loads packages including ggplot2, dplyr
 ```
 
@@ -28,7 +30,7 @@ Auto <- mutate_if(Auto, is.character, factor) # converting characters to factors
 Auto <- mutate(Auto, origin = as.factor(origin)) #converting origin to factor
 ```
 
-Use `View(Auto)` to have a look at all of the data.
+Use `View(Auto)` to look at all of the data.
 
 `mpg`, `displacement`, `horsepower`, `weight`, `acceleration`, and `year` are quantitative variables. `origin` and `name` are qualitative. `cylinder` appears to be quantiative, but only takes a few vaues (`r unique(as.factor(Auto$cylinders))`), so it may be better to treat this as a qualitative variable
 
@@ -73,10 +75,80 @@ min_Auto <- summarise_if(Auto_short, is.numeric, list(min)) # calculating min fo
 
 **(e) Using the full data set, investigate the predictors graphically, using scatterplots or other tools of your choice. Create some plots highlighting the relationships among the predictors. Comment on your findings.**
 
-**(f) Suppose that we wish to predict gas mileage (mpg) on the basis of the other variables. Do your plots suggest that any of the
-other variables might be useful in predicting mpg? Justify your answer.**
+```{r 9_e}
+Auto <- read_csv("Auto.csv", na = c("", "NA", "?")) # loading data, making sure missing values (?s) are imported correctly
+Auto <- na.omit(Auto) # removing missing values
+Auto <- mutate_if(Auto, is.character, factor) # converting characters to factors
+Auto <- mutate(Auto, origin = as.factor(origin)) #converting origin to factor
+
+# Plotting matrix of pair-wise scatterplots of all variables
+ggpairs(select(Auto, -name)) # not including name because it has too many categories
+
+ggplot(data = Auto) +
+  geom_bar(mapping = aes(x = name)) # bar chart of name. Not very useful because there are so many categories
+```
+
+Key points:
+
+- Many of the variables are strongly correlated. For example, `weight` has a correlation coefficient with an absolute value higher than 0.8 with `mpg`, `cylinders`, `displacement` and `horsepower`. 
+- The distribution of `mpg` is slightly negatively skewed.
+- There are some linear relationships between some variables. e.g. between: `cylinders` and `displacement`, `displacement` and `horsepower`, `displacement` and `weight`, `horsepower` and `weight`.
+- Relationships between `year` and the other variables are very noisy, although to a lesser extent for `mpg` and `acceleration`.
+- `origin` affects `mpg` (e.g. higher `mpg` for `origin = 3`), but that could be because of changes in `origin` over time (because `year` also affects `mpg`) rather than a direct effect of `origin` on `mpg`.
+
+**(f) Suppose that we wish to predict gas mileage (mpg) on the basis of the other variables. Do your plots suggest that any of the other variables might be useful in predicting mpg? Justify your answer.**
+
+```{r 9_f}
+Auto <- read_csv("Auto.csv", na = c("", "NA", "?")) # loading data, making sure missing values (?s) are imported correctly
+Auto <- na.omit(Auto) # removing missing values
+# Not converting characters and origin to factors because this causes problems with `gather`
+
+Auto_wrap <- gather(select(Auto, -name), -mpg, key = "vars", value = "values") # getting data in the right format to use for facet_wrap. Excluding `name` because including it messes up the x-axes for facet_wrap 
+
+  ggplot(Auto_wrap, aes(x = values, y = mpg)) +
+    geom_point() +
+    facet_wrap(~ vars, scales = "free_x", ncol = 2)
+
+```
+
+All of the variables except `name` look like they would be useful for predicting, with `displacement`, `horsepower`, `weight` and `cylinder` looking particularly useful because of their strong correlations with `mpg` (see above figure and correlation coefficients in 9(e)). `name` is not very useful (no clear relationship with `mpg` and it would introduce way too many dummy variables).
 
 # Exercise 10
+
+**(a) To begin, load in the `Boston` data set. The Boston data set is part of the `MASS` library in R. How many rows are in this data set? How many columns? What do the rows and columns represent?**
+
+```{r 10a}
+library (MASS)
+# Now the data set is contained in the object Boston.
+as_tibble(Boston)
+
+#Read about the data set:
+?Boston
+```
+
+The data set has 506 rows and 14 columns. The rows are observations. The columns represent the following variables:
+- `crim`: per capita crime rate by town.
+- `zn`: proportion of residential land zoned for lots over 25,000 sq.ft.
+- `indus`: proportion of non-retail business acres per town.
+- `chas`: Charles River dummy variable (= 1 if tract bounds river; 0 otherwise).
+- `nox`: nitrogen oxides concentration (parts per 10 million).
+- `rm`: average number of rooms per dwelling.
+- `age`: proportion of owner-occupied units built prior to 1940.
+- `dis`: weighted mean of distances to five Boston employment centres.
+- `rad`: index of accessibility to radial highways.
+- `tax`: full-value property-tax rate per \$10,000.
+- `ptratio`: pupil-teacher ratio by town.
+- `black`: 1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town.
+- `lstat`: lower status of the population (percent).
+- `medv`: median value of owner-occupied homes in \$1000s.
+
+**(b) Make some pairwise scatterplots of the predictors (columns) in this data set. Describe your findings.**
+
+**(c) Are any of the predictors associated with per capita crime rate? If so, explain the relationship.**
+
+**(d) Do any of the suburbs of Boston appear to have particularly high crime rates? Tax rates? Pupil-teacher ratios? Comment on the range of each predictor.**
+
+**(e) How many of the suburbs in this data set bound the Charles river?**
 
 # New packages/functions 
 
@@ -84,3 +156,5 @@ New packages/functions I've learnt during these exercises:
 
 - `summarise_if`
 - `slice`
+- `gather`
+- use `as_tibble()` instead of `as.tibble()`
