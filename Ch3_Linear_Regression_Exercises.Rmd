@@ -1,0 +1,46 @@
+---
+title: 'Ch3: Linear Regression Applied Exercises'
+author: "Kylie"
+date: "30/03/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("GGally")
+#install.packages("skimr")
+library (MASS)
+library(GGally) # for ggpairs
+library(tidyverse) # loads packages including ggplot2, dplyr
+library(skimr) # for nicer summaries using skim
+library(cowplot) # for plot_grid
+```
+
+# Exercise 8
+
+This question involves the use of simple linear regression on the `Auto`
+data set.
+
+**(a) Use the `lm()` function to perform a simple linear regression with `mpg` as the response and `horsepower` as the predictor.** Use the `summary()` function to print the results. Comment on the output.
+For example:
+
+**i. Is there a relationship between the predictor and the response?**
+
+**ii. How strong is the relationship between the predictor and the response?**
+
+**iii. Is the relationship between the predictor and the response positive or negative?**
+
+**iv. What is the predicted `mpg` associated with a `horsepower` of 98? What are the associated 95% confidence and prediction
+intervals?**
+
+**(b) Plot the response and the predictor. Use the `abline()` function to display the least squares regression line.**
+
+**(c) Use the `plot()` function to produce diagnostic plots of the least squares regression fit. Comment on any problems you see with
+the fit.**
+
+# New packages/functions 
+
+New packages/functions I've learnt during these exercises:
+
