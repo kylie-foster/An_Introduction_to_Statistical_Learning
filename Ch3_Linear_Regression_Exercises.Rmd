@@ -19,7 +19,7 @@ library(skimr) # for nicer summaries using skim
 library(cowplot) # for plot_grid
 ```
 
-# Exercise 8
+## Exercise 8
 
 This question involves the use of simple linear regression on the `Auto`
 data set.
@@ -53,14 +53,82 @@ Negative.
 
 ```{r 8_a_iv}
 
-lm_Auto <- lm(mpg ~ horsepower, data = Auto)
+predict(lm_Auto, data.frame(horsepower = 98), interval = "confidence") # produces confidence intervals for the prediction of medv for a given value of horsepower
 
-summary(lm_Auto)
+predict(lm_Auto, data.frame(horsepower = 98), interval = "prediction") # produces prediction intervals for the prediction of medv for a given value of horsepower
+
 ```
 
 **(b) Plot the response and the predictor. Use the `abline()` function to display the least squares regression line.**
 
+```{r 8_b}
+# ggplot alternative:
+theme_set(theme_bw()) # setting theme to black and white
+
+ggplot(Auto, aes(x = mpg, y = horsepower)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
 **(c) Use the `plot()` function to produce diagnostic plots of the least squares regression fit. Comment on any problems you see with the fit.**
+
+```{r 8_c}
+
+par(mfrow = c(2,2)) # divides the plotting region into a 2 × 2 grid of panels
+plot(lm_Auto) # plotting diagnostic plots
+
+```
+
+There is a nonlinear relationship between `mpg` and `horsepower` that is not captured by the linear model.
+
+## Exercise 9
+
+This question involves the use of multiple linear regression on the `Auto` data set.
+
+**(a) Produce a scatterplot matrix which includes all of the variables in the data set.**
+
+```{r 9_a, fig.height = 19}
+
+ggpairs(select(Auto, -name)) # scatterplot matrix of all variables except 'name'
+
+```
+
+**(b) Compute the matrix of correlations between the variables using the function `cor()`. You will need to exclude the `name` variable, which is qualitative.**
+
+```{r 9_b}
+
+cor(select(Auto, -name)) # correlation matrix between all variables except 'name'
+
+```
+
+
+**(c) Use the `lm()` function to perform a multiple linear regression with `mpg` as the response and all other variables except `name` as the predictors. Use the `summary()` function to print the results. **
+
+```{r 9_c}
+
+lm_Auto_mult <- lm(mpg ~. -name, data = Auto) # multiple linear regression with mpg as response and all other variables except 'name' as predictors
+
+summary(lm_Auto_mult)
+
+```
+
+**Comment on the output. For instance:**
+
+**i. Is there a relationship between the predictors and the response?**
+
+**ii. Which predictors appear to have a statistically significant relationship to the response?**
+
+**iii. What does the coefficient for the year variable suggest?**
+
+**(d) Use the `plot()` function to produce diagnostic plots of the linear regression fit.** Comment on any problems you see with the fit. Do the residual plots suggest any unusually large outliers? Does the leverage plot identify any observations with unusually high leverage?
+
+```{r 9_d}
+plot(lm_Auto_mult) # diagnostic plots
+```
+
+**(e) Use the `*` and `:` symbols to fit linear regression models with interaction effects. Do any interactions appear to be statistically significant?**
+
+**(f) Try a few different transformations of the variables, such as `log(X)`, `√X`, `X^2`. Comment on your findings.**
 
 # New packages/functions 
 
