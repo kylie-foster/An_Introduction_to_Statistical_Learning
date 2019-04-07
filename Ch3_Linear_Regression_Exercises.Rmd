@@ -11,6 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 #install.packages("GGally")
 #install.packages("skimr")
+library(ISLR) # data sets for the ISLR book
 library (MASS)
 library(GGally) # for ggpairs
 library(tidyverse) # loads packages including ggplot2, dplyr
@@ -24,21 +25,42 @@ This question involves the use of simple linear regression on the `Auto`
 data set.
 
 **(a) Use the `lm()` function to perform a simple linear regression with `mpg` as the response and `horsepower` as the predictor.** Use the `summary()` function to print the results. Comment on the output.
+
+```{r 8_a}
+
+lm_Auto <- lm(mpg ~ horsepower, data = Auto)
+
+summary(lm_Auto)
+```
+
 For example:
 
 **i. Is there a relationship between the predictor and the response?**
 
+Yes there is a statistically significant relationship between the predictor and the response.
+
 **ii. How strong is the relationship between the predictor and the response?**
+
+Does this refer to the statistical significance or the size of the effect?
+
+A one unit change in horsepower causes a 0.15 unit decrease in miles per gallon. Since the range of `mpg` is `r range(Auto$mpg)` then this doesn't seem like a large/strong effect.
 
 **iii. Is the relationship between the predictor and the response positive or negative?**
 
-**iv. What is the predicted `mpg` associated with a `horsepower` of 98? What are the associated 95% confidence and prediction
-intervals?**
+Negative.
+
+**iv. What is the predicted `mpg` associated with a `horsepower` of 98? What are the associated 95% confidence and prediction intervals?**
+
+```{r 8_a_iv}
+
+lm_Auto <- lm(mpg ~ horsepower, data = Auto)
+
+summary(lm_Auto)
+```
 
 **(b) Plot the response and the predictor. Use the `abline()` function to display the least squares regression line.**
 
-**(c) Use the `plot()` function to produce diagnostic plots of the least squares regression fit. Comment on any problems you see with
-the fit.**
+**(c) Use the `plot()` function to produce diagnostic plots of the least squares regression fit. Comment on any problems you see with the fit.**
 
 # New packages/functions 
 
