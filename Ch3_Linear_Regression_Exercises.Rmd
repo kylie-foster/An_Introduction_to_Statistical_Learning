@@ -17,6 +17,7 @@ library(GGally) # for ggpairs
 library(tidyverse) # loads packages including ggplot2, dplyr
 library(skimr) # for nicer summaries using skim
 library(cowplot) # for plot_grid
+library(corrplot)
 ```
 
 ## Exercise 8
@@ -87,7 +88,7 @@ This question involves the use of multiple linear regression on the `Auto` data 
 
 **(a) Produce a scatterplot matrix which includes all of the variables in the data set.**
 
-```{r 9_a, fig.height = 19}
+```{r 9_a, fig.height = 19, fig.width = 15}
 
 ggpairs(select(Auto, -name)) # scatterplot matrix of all variables except 'name'
 
@@ -97,7 +98,10 @@ ggpairs(select(Auto, -name)) # scatterplot matrix of all variables except 'name'
 
 ```{r 9_b}
 
-cor(select(Auto, -name)) # correlation matrix between all variables except 'name'
+(cor_Auto <- cor(select(Auto, -name))) # correlation matrix between all variables except 'name'
+
+corrplot(cor_Auto, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45) # plots a correlogram
 
 ```
 
