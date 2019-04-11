@@ -1,5 +1,5 @@
 ---
-title: 'Ch2: Statistical Learning Labs and Exercises'
+title: 'Ch2: Statistical Learning Labs'
 author: "Kylie"
 date: "30/03/2019"
 output: html_document
@@ -8,9 +8,9 @@ output: html_document
 ```{r setup, include=FALSE}
 library(tidyverse) # loads packages including ggplot2
 knitr::opts_chunk$set(echo = TRUE)
+library(GGally) # for ggpairs
 ```
 
-# Labs
 
 In general you should use `<-` instead of `=` to assign values to variables, etc.
 
@@ -80,10 +80,6 @@ contour (x, y, fa, nlevels = 15)
 # Using image:
 image(x, y, fa)
 
-# Alternatively using ggplot and geom_tile
-ggplot(data, aes(x = x, y = y, fill = fa)) +
-  geom_tile()
-
 persp(x, y, fa)
 persp(x, y, fa, theta =30)
 persp(x, y, fa, theta =30, phi =20)
@@ -100,15 +96,67 @@ Here are some alternatives to `read.table()`:
 Auto <- read.table ("Auto.data", header = T, na.strings = "?")
 fix(Auto)
 
+# possible alternative:
 read_delim("Auto.data", delim = "
            ") #seems more complicated than read.table
 
 # Importing .csv file:
 Auto <- read.csv("Auto.csv", header =T,na.strings ="?") # Auto is a data frame
+names(Auto)
 
-Auto_2 <- read_csv("Auto.csv") # Auto_2 is a tibble. Don't need to specify that there is a header, missing values ("?") are imported as NA automatically
-
+Auto_2 <- read_csv("Auto.csv", na = c("", "NA", "?")) # Auto_2 is a tibble. Don't need to specify that there is a header
+glimpse(Auto_2)
 
 ```
 
 ## 2.3.5 Additional Graphical and Numerical Summaries
+
+```{r add_plots}
+plot(Auto$cylinders, Auto$mpg)
+# alternative:
+attach(Auto)
+plot(cylinders, mpg)
+
+# ggplot alternative
+ggplot(data = Auto, aes(x = cylinders, y = mpg)) +
+      geom_point()
+
+Auto$cylinders <- as.factor(Auto$cylinders) # converting cylinders to factor
+
+# using plot on categorical data
+attach(Auto)
+plot(cylinders, mpg)
+plot(cylinders, mpg, col ="red ")
+plot(cylinders, mpg, col ="red", varwidth = T)
+plot(cylinders, mpg, col ="red", varwidth = T,horizontal = T)
+plot(cylinders, mpg, col ="red", varwidth = T, xlab=" cylinders", ylab ="MPG")
+
+# ggplot alternative
+ggplot(data = Auto, aes(x = cylinders, y = mpg)) +
+      geom_boxplot(colour = "black", fill = "red", varwidth = TRUE) + # makes the width of boxes proportional to the quantity of data 
+      coord_flip() # horizontal boxplot
+
+# plotting histograms:
+hist(mpg)
+hist(mpg, col = 2)
+hist(mpg, col = 2, breaks = 15)
+
+# ggplot alternative
+ggplot(data = Auto, aes(x = mpg)) + 
+  geom_histogram(fill = "red", bins = 15)
+
+pairs(Auto) # scatterplot of all variables
+pairs(∼ mpg + displacement + horsepower + weight + acceleration, Auto) # scatterplot of selected variables
+
+# ggplot alternative:
+ggpairs(select(Auto, c(mpg, displacement, horsepower, weight, acceleration)))
+
+
+plot(horsepower ,mpg)
+identify(horsepower, mpg, name) # used to select data in plot
+
+summary(Auto)
+
+summary (mpg)
+```
+
