@@ -388,6 +388,10 @@ New packages/functions I've learnt during these exercises:
 
 `lm(y ~ poly(x, 5), data = data)`: fits `x`, `x^2`, `x^3`, `x^4` and `x^5`.
 
+`lm(y ~ .^2)`: creates all combinations of two-way interactions. Does NOT square the terms.
+
+`lm(y ∼ x + 0)`: regression without an intercept term.
+
 - `predict()`
 
 - `geom_smooth()`
