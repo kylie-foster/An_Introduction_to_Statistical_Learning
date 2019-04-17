@@ -1,0 +1,304 @@
+---
+title: "Ch4: Classification Lab"
+author: "Kylie"
+date: "17/04/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("ISLR")
+library(MASS) # for lda, and contains a large collection of datasets
+library(ISLR) # data sets for the ISLR book
+#library(GGally) # for ggpairs
+library(tidyverse) # loads packages including ggplot2, dplyr
+#library(skimr) # for nicer summaries using skim
+#library(cowplot) # for plot_grid
+#library(car) # for vif()
+#library(olsrr) # for studentized residual plots
+library(knitr) # for kable
+#library(ggplot2)
+library (class) # for knn()
+```
+
+## 4.6.1 The Stock Market Data
+
+
+```{r stock_market}
+names(Smarket)
+
+dim(Smarket)
+
+summary(Smarket)
+
+cor(Smarket[,-9])
+
+attach(Smarket)
+plot(Volume)
+
+ggplot(data = Smarket, aes(x= Year, y= Volume)) +
+  geom_point()
+```
+
+## 4.6.2 Logistic Regression
+
+```{r log_reg}
+glm.fits <- glm(Direction ∼ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data = Smarket, family = binomial)
+summary(glm.fits)
+
+# different ways to get the coefficients:
+coef(glm.fits)
+
+summary(glm.fits)$coef
+
+summary(glm.fits)$coef[,4] # gives the p-values for all coefficients (4 selects the fourth column)
+```
+
+The `predict()` function can be used to predict the probability that the
+market will go up, given values of the predictors. The type="response"
+option tells R to output probabilities of the form P(Y = 1|X), as opposed
+to other information such as the logit. If no data set is supplied to the
+`predict()` function, then the probabilities are computed for the training
+data that was used to fit the logistic regression model.
+
+```{r log_pred}
+contrasts(Direction) # R has created a dummy variable with a 1 for Up
+
+glm.probs <- predict (glm.fits, type = "response") # calculates the probabilites that Y = 1 (i.e. the market is Up)
+glm.probs [1:10] # printing just the first 10 probabilities
+
+# converting the probabilities to class predictions:
+glm.pred <- rep ("Down", 1250) # creates a vector of 1,250 Down elements
+# improvement:
+glm.pred <- rep("Down", length(glm.probs))
+glm.pred[glm.probs > 0.5] <- "Up" # transforms to Up all of the elements for which the predicted probability of a market increase exceeds 0.5.
+
+table(glm.pred, Direction) # confusion matrix used to determine how many observations were correctly or incorrectly classified
+# kable does not work:
+kable(table(glm.pred, Direction))
+
+100*mean(glm.pred == Direction) # % accuracy (percentage of predictions that are correct)
+```
+
+The diagonal elements of the confusion matrix give correct predictions,
+while the off-diagonals give incorrect predictions.
+
+```{r hold_out}
+# Creating a training and hold out set so we can check the accuracy of the model on data that was not used to fit it.
+train <- (Year < 2005) # a Boolean vector (elements are TRUE or FALSE) the same length as Year. The elements of the vector that correspond to observations that occurred before 2005 are set to TRUE, whereas those that correspond to observations in 2005 are set to FALSE
+Smarket_2005 <- Smarket[!train, ] # picks out a submatrix of the stock market data set, corresponding only to the dates after 2004 (the FALSE values in train)
+dim(Smarket_2005)
+
+Direction_2005 <- Direction[!train]
+
+glm_fits <- glm(Direction ∼ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data = Smarket, family = binomial, subset = train) # can use subset argument instead of explicitly saving new training and testing set.
+glm_probs <- predict(glm_fits, Smarket_2005, type = "response") # finding predicted probabilites for data that was not used to fit the model
+
+glm_pred <- rep ("Down", length(glm_probs))
+glm_pred[glm_probs > 0.5] <- "Up"
+table(glm_pred, Direction_2005) # confusion matrix
+mean(glm_pred == Direction_2005) # accuracy of model using test data
+mean(glm_pred != Direction_2005) # test set error
+```
+
+Using predictors that have no
+relationship with the response tends to cause a deterioration in the test
+error rate (since such predictors cause an increase in variance without a
+corresponding decrease in bias), and so removing such predictors may in
+turn yield an improvement.
+
+```{r log_reg_small}
+glm_fits <- glm(Direction ∼ Lag1 + Lag2, data = Smarket, family = binomial, subset = train)
+glm_probs <- predict(glm_fits, Smarket_2005, type = "response")
+glm_pred <- rep("Down", 252)
+glm_pred[glm_probs > 0.5] <- "Up"
+table(glm_pred, Direction_2005)
+mean(glm_pred == Direction_2005)
+
+# Finding predictions for specific values of Lag1 and Lag2
+predict(glm_fits, newdata = data.frame(Lag1 = c(1.2, 1.5), Lag2 = c(1.1, -0.8)),type = "response")
+# the first prediction is the probability of UP for Lag1 = 1.2 and Lag2 = 1.1, the second prediction is for Lag1 = 1.5 and Lag2 = -0.8
+```
+
+## 4.6.3 Linear Discriminant Analysis (LDA)
+
+```{r lda_fit}
+lda_fit <- lda(Direction ∼ Lag1 + Lag2, data = Smarket, subset = train) # using only the training set to fit lda (only data before 2005)
+lda_fit
+# priors are just the proportion of the training observations for which the market went Down and Up
+# group means are the average of each predictor within each class
+# The group means suggest that there is a tendency for the previous 2 days’ returns to be negative on days when the market increases, and a tendency for the previous days’ returns to be positive on days when the market declines.
+
+plot(lda_fit) # produces plots of the linear discriminants
+```
+
+$\delta_k(x) = x^T\Sigma^{−1}\mu_k − \frac{1}{2}\mu^T_k\Sigma^{−1}\mu_k + log\pi_k$
+
+The *coefficients of linear discriminants* output provides the linear
+combination of `Lag1` and `Lag2` that are used to form the LDA decision rule.
+In other words, these are the multipliers of the elements of $X = x$ in
+the above equation. If $−0.642×Lag1−0.514×Lag2$ is large, then the LDA classifier will predict a market increase, and if it is small, then the LDA classifier will
+predict a market decline.
+
+The `predict()` function returns a list with three elements:
+
+- `class` contains LDA’s predictions about the movement of the market.
+
+- `posterior` is a matrix whose kth column contains the
+posterior probability that the corresponding observation belongs to the kth
+class, computed from Eq (4.10): $Pr(Y = k|X = x) = \frac{\pi_kf_k(x)}{\Sigma^K_{l=1} \pi_lf_l(x)}$. 
+
+- `x` contains the linear discriminants, described earlier.
+
+```{r lda_predict}
+lda_pred <- predict(lda_fit, Smarket_2005) # predictions for the test data
+names(lda_pred)
+
+lda_pred$class[1:10]
+
+lda_pred$posterior[1:10, ]
+
+lda_pred$x[1:10, ]
+
+# Calculating class predictions (these are almost identical to the logistic regression predictions)
+lda_class <- lda_pred$class
+table(lda_class, Direction_2005)
+mean(lda_class == Direction_2005) # prediction accuracy
+
+# applying a 50% threshold to posterior probabilities to recreate the predictions in lda.pred$class
+sum(lda_pred$posterior[ ,1] >= 0.5) # gives number of predicted Down (because 1st column is probability of Down)
+sum(lda_pred$posterior[,1] < 0.5) # number of predicted Up
+
+# could use the above approach to use a posterior probability threshold other than 50% to make predictions. e.g using a threshold of 90%:
+sum(lda_pred$posterior[,1] > 0.9)
+```
+
+
+## 4.6.4 Quadratic Discriminant Analysis (QDA)
+
+```{r qda_model}
+qda_fit <- qda(Direction ∼ Lag1 + Lag2, data = Smarket, subset = train)
+qda_fit
+
+# The predict() function works in exactly the same fashion as for LDA.
+qda_class <- predict(qda_fit, Smarket_2005)$class
+table(qda_class, Direction_2005) # confusion matrix
+mean(qda_class == Direction_2005) # prediction accuracy
+```
+
+This level of accuracy is quite impressive for stock market data.
+
+## 4.6.5 K-Nearest Neighbors (KNN)
+
+```{r knn_model}
+
+train_X <- cbind(Lag1, Lag2)[train ,] # training set predictors
+test_X <- cbind (Lag1, Lag2)[!train ,] # test set predictors
+train_Direction <- Direction[train] # class labels for training data
+
+set.seed(1) # for reproducibility because if several observations are tied as nearest neighbors then R will randomly break the tie.
+knn_pred <- knn(train_X, test_X, train_Direction, k = 1)
+table(knn_pred, Direction_2005) # confusion matrix
+mean(knn_pred == Direction_2005) # accuracy
+
+# Trying k = 3
+knn_pred <- knn(train_X, test_X, train_Direction, k = 3)
+table(knn_pred, Direction_2005) # confusion matrix
+mean(knn_pred == Direction_2005) # accuracy
+```
+
+## 4.6.6 An Application to Caravan Insurance Data
+
+```{r Caravan_insurance}
+dim(Caravan) # part of the ISLR library.
+
+attach(Caravan)
+summary(Purchase)
+
+# Standardizing the predictors to have mean of zero and standard deviaton of 1
+standardized_X <- scale(Caravan[,-86]) # excluding column 86 because this is the qualitative Purchase variable
+
+# showing the effect of standardization:
+var(Caravan[,1])
+var(Caravan [,2])
+
+var(standardized_X[,1])
+var(standardized_X[,2])
+
+# splitting obseravations into test and train set
+test <- 1:1000
+test_X <- standardized_X[test ,] # gives the submatrix of the data containing the observations whose indices range from 1 to 1000 (i.e. chooses the first 1000 rows)
+train_X <- standardized_X[-test ,] # gives the submatrix containing the observations whose indices do NOT range from 1 to 1000.
+test_Y <- Purchase[test]
+train_Y <- Purchase[-test]
+
+set.seed (1)
+knn_pred <- knn(train_X, test_X, train_Y, k = 1)
+mean(test_Y != knn_pred) # test set error
+mean(test_Y != "No") # this is the error rate we could get by just predicting No for all observations.
+```
+
+If we want to try to sell insurance only to customers who are likely to buy it, the overall error rate is not of interest. Instead, we are interested in the fraction of individuals that are correctly predicted to buy insurance.
+
+```{r knn_model_ins}
+table(knn_pred, test_Y)
+
+9/(68+9) # fraction of individuals that are correctly predicted to buy insurance
+
+# using k = 3:
+knn_pred <- knn(train_X, test_X, train_Y, k = 3)
+table(knn_pred, test_Y)
+table(knn_pred, test_Y)[2,2]/(table(knn_pred, test_Y)[2,1] + table(knn_pred, test_Y)[2,2]) # fraction of individuals that are correctly predicted to buy insurance
+
+
+# using k = 5
+knn_pred <- knn(train_X, test_X, train_Y, k = 5)
+table(knn_pred, test_Y)
+table(knn_pred, test_Y)[2,2]/(table(knn_pred, test_Y)[2,1] + table(knn_pred, test_Y)[2,2]) # fraction of individuals that are correctly predicted to buy insurance
+
+```
+
+Using logistic regression:
+
+```{r log_model_ins}
+
+glm_fits <- glm(Purchase ~., data = Caravan, family = binomial, subset = -test) # fitting logistic regression with all predictors (not standardized)
+glm_probs <- predict (glm_fits, Caravan[test, ], type = "response") # predicted probabilities for the test data
+# Getting class predictions using 0.5 as the threshold:
+glm_pred <- rep ("No", 1000)
+glm_pred[glm_probs > 0.5] = "Yes"
+table(glm_pred, test_Y) # confusion matrix
+# Only seven of the test observations are predicted to purchase insurance and we are wrong about all of these!
+
+# Try predicting a purchase any time the predicted probability of purchase exceeds 0.25
+glm_pred <- rep("No", length(test_Y))
+glm_pred[glm_probs > 0.25] <- "Yes"
+(conf_mat <- table(glm_pred, test_Y))
+conf_mat[2,2]/(conf_mat[2,1] + conf_mat[2,2]) # fraction of individuals that are correctly predicted to buy insurance
+
+```
+
+--------------------------------------------------
+# New functions 
+
+New functions I've learnt from this chapter:
+
+- `glm()`
+
+- `predict()`
+
+- `lda()`. Used to fit a Linear Discriminant Analysis model. Part of the `MASS` library. The syntax is identical to that of `lm()`. LDA assumes that the variables are continuous, so it is not a good idea to use it when you have categorical variables (use logistic regression instead).
+
+- `qda()`. Used to fit a Quadratic Discriminant Analysis model. Part of the `MASS` library. Syntax is identical to that of `lda()`. Again, discriminant analysis assumes the variables are continous, so it is not a good idea to use it when you have categorical variables.
+
+- `knn()`. Used to fit K-nearest neighbors. Part of the `class` library. This function works differently to the other model-fitting
+functions described above. Instead of a two-step
+approach in which we first fit the model and then we use the model to make
+predictions, `knn()` fits the model and forms predictions using a single command. The function requires four inputs.
+
+1. A matrix containing the predictors associated with the **training data**.
+2. A matrix containing the predictors associated with the data for which
+we wish to make predictions (the **testing data**).
+3. A vector containing the **class labels for the training observations**.
+4. A value for **K, the number of nearest neighbors** to be used by the
+classifier.

@@ -58,8 +58,7 @@ This exercise relates to the `College` data set, which can be found in the file 
 
 - `Grad.Rate`: Graduation rate
 
-**(a) Use the `read.csv()` function to read the data into R. Call the loaded data college. Make sure that you have the directory set
-to the correct location for the data.**
+**(a) Use the `read.csv()` function to read the data into R. Call the loaded data college. Make sure that you have the directory set to the correct location for the data.**
 
 ```{r 8a}
 # suppressing messages from readr
@@ -166,8 +165,7 @@ ggplot(college, mapping = aes(x = Elite, y = Outstate)) +
   geom_boxplot()
 ```
 
-**v. Use the `hist()` function to produce some histograms with
-differing numbers of bins for a few of the quantitative variables.**
+**v. Use the `hist()` function to produce some histograms with differing numbers of bins for a few of the quantitative variables.**
 You may find the command `par(mfrow=c(2,2))` useful:
 it will divide the print window into four regions so that four
 plots can be made simultaneously. Modifying the arguments

@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(MASS) # large collection of datasets
 library(ISLR) # data sets for the ISLR book
 #library(GGally) # for ggpairs
-library(tidyverse) # loads packages including ggplot2, dplyr
+#library(tidyverse) # loads packages including ggplot2, dplyr
 #library(skimr) # for nicer summaries using skim
 #library(cowplot) # for plot_grid
 library(car) # for vif()

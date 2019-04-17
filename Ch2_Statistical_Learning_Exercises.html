@@ -467,11 +467,11 @@ college &lt;- college[,-1]
 ##  n obs: 777 
 ##  n variables: 18 
 ## 
-## -- Variable type:character -------------------------------------------------------------------------------------------------------------
+## -- Variable type:character ----------------------------------------------------------
 ##  variable missing complete   n min max empty n_unique
 ##   Private       0      777 777   2   3     0        2
 ## 
-## -- Variable type:numeric ---------------------------------------------------------------------------------------------------------------
+## -- Variable type:numeric ------------------------------------------------------------
 ##     variable missing complete   n     mean      sd     p0    p25    p50
 ##       Accept       0      777 777  2018.8  2451.11   72    604   1110  
 ##         Apps       0      777 777  3001.64 3870.2    81    776   1558  
@@ -532,7 +532,7 @@ skim(select(college, Elite))</code></pre>
 ##  n obs: 777 
 ##  n variables: 1 
 ## 
-## -- Variable type:factor ----------------------------------------------------------------------------------------------------------------
+## -- Variable type:factor -------------------------------------------------------------
 ##  variable missing complete   n n_unique              top_counts ordered
 ##     Elite       0      777 777        2 No: 699, Yes: 78, NA: 0   FALSE</code></pre>
 <pre class="r"><code>ggplot(college, mapping = aes(x = Elite, y = Outstate)) +
@@ -781,7 +781,7 @@ ggplot(Boston_10d) +
 ##  n obs: 506 
 ##  n variables: 14 
 ## 
-## -- Variable type:factor ----------------------------------------------------------------------------------------------------------------
+## -- Variable type:factor -------------------------------------------------------------
 ##  variable missing complete   n n_unique                     top_counts
 ##      chas       0      506 506        2           0: 471, 1: 35, NA: 0
 ##       rad       0      506 506        9 24: 132, 5: 115, 4: 110, 3: 38
@@ -789,7 +789,7 @@ ggplot(Boston_10d) +
 ##    FALSE
 ##    FALSE
 ## 
-## -- Variable type:numeric ---------------------------------------------------------------------------------------------------------------
+## -- Variable type:numeric ------------------------------------------------------------
 ##  variable missing complete   n   mean     sd       p0     p25    p50
 ##       age       0      506 506  68.57  28.15   2.9     45.02   77.5 
 ##     black       0      506 506 356.67  91.29   0.32   375.38  391.44
