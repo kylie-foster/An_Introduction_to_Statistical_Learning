@@ -114,3 +114,12 @@ we wish to make predictions (the **testing data**).
 classifier.
 
 - `sample()`
+
+### Other notes
+
+- How to combine violin and boxplots:
+
+`ggplot(Auto_wrap, aes(y = values, x = mpg01)) +
+    geom_violin() +
+    geom_boxplot(width=0.1) +
+    facet_wrap(~ vars, scales = "free_y", ncol = 2)`
