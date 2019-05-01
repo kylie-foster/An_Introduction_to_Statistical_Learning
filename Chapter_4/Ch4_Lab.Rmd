@@ -1,8 +1,12 @@
 ---
-title: "Ch4: Classification Lab"
-author: "Kylie"
-date: "17/04/2019"
-output: html_document
+title: "An Introduction to Statistical Learning: Chapter 4 Labs"
+author: "Kylie Foster"
+date: "1 May 2019"
+output: 
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+
 ---
 
 ```{r setup, include=FALSE}
@@ -278,29 +282,3 @@ conf_mat[2,2]/(conf_mat[2,1] + conf_mat[2,2]) # fraction of individuals that are
 
 ```
 
---------------------------------------------------
-# New functions 
-
-New functions I've learnt from this chapter:
-
-- `glm()`
-
-- `predict()`
-
-- `lda()`. Used to fit a Linear Discriminant Analysis model. Part of the `MASS` library. The syntax is identical to that of `lm()`. LDA assumes that the variables are continuous, so it is not a good idea to use it when you have categorical variables (use logistic regression instead).
-
-- `qda()`. Used to fit a Quadratic Discriminant Analysis model. Part of the `MASS` library. Syntax is identical to that of `lda()`. Again, discriminant analysis assumes the variables are continous, so it is not a good idea to use it when you have categorical variables.
-
-- `knn()`. Used to fit K-nearest neighbors. Part of the `class` library. This function works differently to the other model-fitting
-functions described above. Instead of a two-step
-approach in which we first fit the model and then we use the model to make
-predictions, `knn()` fits the model and forms predictions using a single command. The function requires four inputs.
-
-1. A matrix containing the predictors associated with the **training data**.
-2. A matrix containing the predictors associated with the data for which
-we wish to make predictions (the **testing data**).
-3. A vector containing the **class labels for the training observations**.
-4. A value for **K, the number of nearest neighbors** to be used by the
-classifier.
-
-- `sample()`
