@@ -1,0 +1,116 @@
+---
+title: "Useful Functions"
+author: "Kylie Foster"
+date: "1 May 2019"
+output: 
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(GGally) # for ggpairs
+library(tidyverse) # loads packages including ggplot2
+```
+
+---
+
+# ISL Chapter 2
+
+### `ggpairs()`
+
+Useful for exploratory data analysis. Produces a pairwise comparison of multivariate data. By default, `ggpairs` provides two different comparisons of each pair of columns and displays either the density (for continous variables) or count (for categorical variables) along the diagonal.
+
+To carry out a pairwise comparison of all variables in a dataframe:
+
+```{r ggpairs_all, message=FALSE}
+data(tips, package = "reshape")
+(pm <- ggpairs(tips))
+```
+
+If this creates too many subplots you can restrict the plot to a specific number of columns using:
+
+```{r ggpairs_restrict, message=FALSE}
+
+(pm <- ggpairs(tips, columns = c("total_bill", "time", "tip")))
+# or equivalently you can use column numbers instead of variable names:
+pm <- ggpairs(tips, columns = c(1, 6, 2))
+```
+
+To change the labels on the axes use `columnLabels`:
+
+```{r ggpairs_labels, message=FALSE}
+(pm <- ggpairs(tips, columns = c("total_bill", "time", "tip"), columnLabels = c("Total Bill", "Time of Day", "Tip")))
+
+```
+
+To apply aesthetics to all of the subplots (e.g. colour) use the `mapping` parameter:
+
+```{r ggpairs_color, message=FALSE}
+(pm <- ggpairs(tips, mapping = aes(color = sex), columns = c("total_bill", "time", "tip")))
+```
+
+It is also possible to change the `theme`, for example:
+
+```{r ggpairs_theme, message=FALSE}
+(pm <- ggpairs(tips, mapping = aes(color = sex), columns = c("total_bill", "time", "tip")) +
+   theme_bw())
+```
+
+For more information (including how to replace default plots with different types of plots, add trendlines etc):
+https://mran.microsoft.com/snapshot/2016-01-07/web/packages/GGally/vignettes/ggpairs.html
+
+### `glimpse()`
+
+This is like a transposed version of print: columns run down the page, and data runs across. This is more useful than the default display of tibbles because it makes it possible to see every column in a data frame/tibble. The width of the displayed data defaults to the width of the screen.
+
+Example:
+
+```{r}
+glimpse(mtcars)
+```
+
+Source: Rdocumentation
+
+- `summarise_if`
+- `slice`
+- `gather` sometimes required to use facet_wrap
+- `case_when`
+
+### Other notes:
+
+- To suppress messages from readr (when using `read_csv`) in Rmarkdown output, use `options(readr.num_columns = 0)`.
+
+- Use `message = FALSE` to prevent Rmarkdown output from displaying messages such as "`stat_bin()` using `bins = 30`. Pick better value with `binwidth`."
+
+- One way to check for missing values is to use: `sum(is.na(data))`. This will return the number of missing values.
+
+- You can use `fig.height =` and `fig.width =` in the heading of a code chunk to change the dimensions of all figures in that chunk in the Rmarkdown output.
+
+- use `as_tibble()` instead of `as.tibble()`
+
+# ISL Chapter 4
+
+- `glm()`
+
+- `predict()`
+
+- `lda()`. Used to fit a Linear Discriminant Analysis model. Part of the `MASS` library. The syntax is identical to that of `lm()`. LDA assumes that the variables are continuous, so it is not a good idea to use it when you have categorical variables (use logistic regression instead).
+
+- `qda()`. Used to fit a Quadratic Discriminant Analysis model. Part of the `MASS` library. Syntax is identical to that of `lda()`. Again, discriminant analysis assumes the variables are continous, so it is not a good idea to use it when you have categorical variables.
+
+## `knn()`. 
+Used to fit K-nearest neighbors. Part of the `class` library. This function works differently to the other model-fitting
+functions described above. Instead of a two-step
+approach in which we first fit the model and then we use the model to make
+predictions, `knn()` fits the model and forms predictions using a single command. The function requires four inputs.
+
+1. A matrix containing the predictors associated with the **training data**.
+2. A matrix containing the predictors associated with the data for which
+we wish to make predictions (the **testing data**).
+3. A vector containing the **class labels for the training observations**.
+4. A value for **K, the number of nearest neighbors** to be used by the
+classifier.
+
+- `sample()`
