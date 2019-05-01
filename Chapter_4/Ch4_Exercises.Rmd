@@ -20,10 +20,10 @@ library(tidyverse) # loads packages including ggplot2, dplyr
 #library(car) # for vif()
 #library(olsrr) # for studentized residual plots
 library(knitr) # for kable
-#library(ggplot2)
 library (class) # for knn()
 ```
 
+Still need to do Ex 10i, Ex13
 ## Exercise 10
 
 This question should be answered using the `Weekly` data set, which
@@ -34,22 +34,23 @@ weekly returns for 21 years, from the beginning of 1990 to the end of
 
 **(a) Produce some numerical and graphical summaries of the `Weekly` data. Do there appear to be any patterns?**
 
-```{r 10_a, fig.height = 19, fig.width = 15}
+```{r 10_a, fig.height = 13, fig.width = 15, message = FALSE}
 # taking an initial look at the data
-names(Weekly)
-
-as_tibble(Weekly)
+glimpse(Weekly)
 
 summary(Weekly)
 
-ggpairs(Weekly)
-
-#cor(select(Weekly, Volume, Year))
+# pairwise plots of all variables:
+ggpairs(Weekly, mapping = aes(color = Direction)) +
+  theme_bw()
 
 # plot of all variables versus the predictor (direction)
 theme_set(theme_bw()) # setting theme to black and white
-Weekly_wrap <- gather(Weekly, -Direction, key = "vars", value = "values") # getting data in the right format to use for facet_wrap. 
+Weekly_wrap <- gather(Weekly, -Direction, key = "vars", value = "values") # getting data 
+# in the right format to use for facet_wrap. 
+```
 
+```{r 10_a_extra, message = FALSE}
 ggplot(Weekly_wrap, aes(y = values, x = Direction)) +
     geom_boxplot() +
     facet_wrap(~ vars, scales = "free_y", ncol = 2)
@@ -65,7 +66,8 @@ The only clear relationship between `Direction` and the other variables is betwe
 **(b) Use the full data set to perform a logistic regression with `Direction` as the response and the five lag variables plus `Volume` as predictors. Use the `summary` function to print the results. Do any of the predictors appear to be statistically significant? If so, which ones?**
 
 ```{r 10_b}
-log_model <- glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data = Weekly, family = binomial)
+log_model <- glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, 
+                 data = Weekly, family = binomial)
 
 summary(log_model)
 
@@ -75,20 +77,26 @@ Only `Lag2` is statistically significant (p-value of `r round(coef(summary(log_m
 
 **(c) Compute the confusion matrix and overall fraction of correct predictions. Explain what the confusion matrix is telling you about the types of mistakes made by logistic regression.**
 
-```{r 10_c}
-contrasts(Weekly$Direction)
 
-log_probs <- predict(log_model, Weekly, type = "response") # predicting probability of Up for entire dataset
+```{r 10_c}
+# Checking that `Up` is represented by 1 and `Down` is represented by 0: 
+contrasts(Weekly$Direction)
+# predicting probability of Up for entire dataset:
+log_probs <- predict(log_model, Weekly, type = "response") 
+
+# converting probabilities to class predictions:
 glm_pred <- as.factor(case_when(log_probs > 0.5 ~ "Up", 
-                             log_probs <= 0.5 ~ "Down")) # converting probabilities to class predictions
+                             log_probs <= 0.5 ~ "Down"))
 
 (log_conf <- table(glm_pred, Weekly$Direction)) # confusion matrix
 
-mean(glm_pred == Weekly$Direction) # accuracy
-log_conf[2,1]/(log_conf[1,1] + log_conf[2,1]) # false positive rate (fraction of negative examples that are classified as positive )
-log_conf[1,2]/(log_conf[1,2] + log_conf[2,2]) # false negative rate (fraction of positive examples that are classified as negative)
+mean(glm_pred == Weekly$Direction) # calculating proportion of predictions that are accurate
 
-#rep("Yes",length(Weekly$Direction))
+# false positive rate (fraction of negative examples that are classified as positive )
+log_conf[2,1]/(log_conf[1,1] + log_conf[2,1]) 
+# false negative rate (fraction of positive examples that are classified as negative)
+log_conf[1,2]/(log_conf[1,2] + log_conf[2,2]) 
+
 ```
 
 If we naively assumed `Up` for all observations we would have an accuracy of `r round(100*mean("Up" == Weekly$Direction),2)`%, which is very similar to the accuracy of the logistic regression on the training set (so our logistic regression is not performing well even for the training set).
@@ -98,66 +106,87 @@ The false negative rate is low (7.9%), but the false positive rate is very high 
 **(d) Now fit the logistic regression model using a training data period from 1990 to 2008, with `Lag2` as the only predictor. Compute the confusion matrix and the overall fraction of correct predictions for the held out data (that is, the data from 2009 and 2010).**
 
 ```{r 10_d}
-train <- (Weekly$Year < 2009) # a Boolean vector (elements are TRUE or FALSE) the same length as Year. The elements of the vector that correspond to observations that occurred before 2009 are set to TRUE, whereas those that correspond to observations after 2009 are set to FALSE
+train <- (Weekly$Year < 2009) # a Boolean vector (elements are TRUE or FALSE) the same length as 
+# Year. The elements of the vector that correspond to observations that occurred before 2009 
+# are set to TRUE, whereas those that correspond to observations after 2009 are set to FALSE
 
-log_model <- glm(Direction ~ Lag2, data = Weekly, family = binomial, subset = train) # fitting logistic with Lag2 as the only predictor, using just the data from 1990 to 2008
-log_probs <- predict(log_model, Weekly[!train, ], type = "response") # predicting probability of Up for test set (not training set)
+# fitting logistic with Lag2 as the only predictor, using just the data from 1990 to 2008:
+log_model <- glm(Direction ~ Lag2, data = Weekly, family = binomial, subset = train) 
+
+# predicting probability of Up for test set (not training set):
+log_probs <- predict(log_model, Weekly[!train, ], type = "response") 
+
+# converting probabilities to class predictions:
 glm_pred <- as.factor(case_when(log_probs > 0.5 ~ "Up", 
-                             log_probs <= 0.5 ~ "Down")) # converting probabilities to class predictions
+                             log_probs <= 0.5 ~ "Down")) 
+
 (log_conf <- table(glm_pred, Weekly$Direction[!train])) # confusion matrix
+
 mean(glm_pred == Weekly$Direction[!train]) # accuracy
-log_conf[2,1]/(log_conf[1,1] + log_conf[2,1]) # false positive rate (fraction of negative examples that are classified as positive )
-log_conf[1,2]/(log_conf[1,2] + log_conf[2,2]) # false negative rate (fraction of positive examples that are classified as negative)
+
 ```
 
-The accuracy is improved.
+The accuracy is improved (62.5% on the test set compared to 56.1% without using a test/train split).
 
 **(e) Repeat (d) using LDA.**
 
 ```{r 10_e}
-lda_model <- lda(Direction ~ Lag2, data = Weekly, subset = train) # fitting lda with Lag2 as the only predictor, using just the data from 1990 to 2008
-lda_class <- predict(lda_model, Weekly[!train, ])$class # predictions for test set (not training set)
+# fitting lda with Lag2 as the only predictor, using just the data from 1990 to 2008:
+lda_model <- lda(Direction ~ Lag2, data = Weekly, subset = train) 
+
+# predictions for test set (not training set): 
+lda_class <- predict(lda_model, Weekly[!train, ])$class
+
 (lda_conf <- table(lda_class, Weekly$Direction[!train])) # confusion matrix
+
 mean(lda_class == Weekly$Direction[!train]) # accuracy
-lda_conf[2,1]/(lda_conf[1,1] + lda_conf[2,1]) # false positive rate (fraction of negative examples that are classified as positive )
-lda_conf[1,2]/(lda_conf[1,2] + lda_conf[2,2]) # false negative rate (fraction of positive examples that are classified as negative)
+
 ```
 
-Accuracy of LDA is the same as the accuracy of logistic regression model.
+The accuracy of the LDA model is the same as the accuracy of logistic regression model.
 
 **(f) Repeat (d) using QDA.**
 
 ```{r 10_f}
-qda_model <- qda(Direction ~ Lag2, data = Weekly, subset = train) # fitting qda with Lag2 as the only predictor, using just the data from 1990 to 2008
-qda_class <- predict(qda_model, Weekly[!train, ])$class # predictions for test set (not training set)
+# fitting qda with Lag2 as the only predictor, using just the data from 1990 to 2008:
+qda_model <- qda(Direction ~ Lag2, data = Weekly, subset = train) 
+
+# predictions for test set (not training set):
+qda_class <- predict(qda_model, Weekly[!train, ])$class
+
 (qda_conf <- table(qda_class, Weekly$Direction[!train])) # confusion matrix
+
 mean(qda_class == Weekly$Direction[!train]) # accuracy
-qda_conf[2,1]/(qda_conf[1,1] + qda_conf[2,1]) # false positive rate (fraction of negative examples that are classified as positive )
-qda_conf[1,2]/(qda_conf[1,2] + qda_conf[2,2]) # false negative rate (fraction of positive examples that are classified as negative)
 ```
 
-Accuracy is lower compared to LDA and logistic regression.
+The accuracy of QDA (58.7%) is lower compared to LDA and logistic regression (62.5% for both).
 
 **(g) Repeat (d) using KNN with K = 1.**
 
 ```{r 10_g}
-train_X <- data.frame(Weekly$Lag2[train]) # training set predictors. data.frame is required because knn interprets a vector as a single observation of multiple predictors (with the number of predictors equal to the length of the vector)
+# training set predictors. data.frame is required because knn interprets a 
+# vector as a single observation of multiple predictors (with the number 
+# of predictors equal to the length of the vector)
+train_X <- data.frame(Weekly$Lag2[train]) 
 test_X <- data.frame(Weekly$Lag2[!train]) # test set predictors
 train_Direction <- Weekly$Direction[train] # class labels for training data
 
-set.seed(1) # for reproducibility because if several observations are tied as nearest neighbors then R will randomly break the tie.
+set.seed(1) # for reproducibility because if several observations are tied 
+# as nearest neighbors then R will randomly break the tie.
+
 knn_pred <- knn(train_X, test_X, train_Direction, k = 1)
+
 (knn_conf <- table(knn_pred, Weekly$Direction[!train])) # confusion matrix
+
 mean(knn_pred == Weekly$Direction[!train]) # accuracy
-knn_conf[2,1]/(knn_conf[1,1] + knn_conf[2,1]) # false positive rate (fraction of negative examples that are classified as positive )
-knn_conf[1,2]/(knn_conf[1,2] + knn_conf[2,2]) # false negative rate (fraction of positive examples that are classified as negative)
+
 ```
 
-KNN has the worst overall accuracy.
+KNN with K = 1 has the worst overall accuracy (51.1%).
 
 **(h) Which of these methods appears to provide the best results on this data?**
 
-Linear regression and LDA give the best overall accuracy.
+Linear regression and LDA give the equal best overall accuracy.
 
 **(i) Experiment with different combinations of predictors, including possible transformations and interactions, for each of the methods. Report the variables, method, and associated confusion matrix that appears to provide the best results on the held out data. Note that you should also experiment with values for K in the KNN classifier.**
 
@@ -168,22 +197,20 @@ Linear regression and LDA give the best overall accuracy.
 **(a) Create a binary variable, `mpg01`, that contains a 1 if `mpg` contains a value above its median, and a 0 if `mpg` contains a value below its median. You can compute the median using the `median()` function. Note you may find it helpful to use the `data.frame()` function to create a single data set containing both `mpg01` and the other `Auto` variables.**
 
 ```{r 11_a}
-
+# Creating a binary variable, `mpg01`, that contains a 1 if `mpg` contains a 
+# value above its median, and a 0 if `mpg` contains a value below its median
 Auto <- mutate(Auto, mpg01 = as.factor(case_when(mpg > median(mpg) ~ 1, 
-                             mpg <= median(mpg) ~ 0))) # Creating a binary variable, `mpg01`, that contains a 1 if `mpg` contains a value above its median, and a 0 if `mpg` contains a value below its median
+                             mpg <= median(mpg) ~ 0))) 
 ```
 
 
 **(b) Explore the data graphically in order to investigate the association between `mpg01` and the other features. Which of the other features seem most likely to be useful in predicting `mpg01`? Scatterplots and boxplots may be useful tools to answer this question. Describe your findings.**
 
 ```{r 11_b}
+# getting data in the right format to use for facet_wrap. Excluding name and origin:
+Auto_wrap <- gather(Auto, -c("mpg01", "name", "origin"), key = "vars", value = "values") 
 
-Auto_wrap <- gather(Auto, -c("mpg01", "name", "origin"), key = "vars", value = "values") # getting data in the right format to use for facet_wrap. Excluding name and origin
-
-ggplot(Auto_wrap, aes(y = values, x = mpg01)) +
-    geom_boxplot() +
-    facet_wrap(~ vars, scales = "free_y", ncol = 2)
-
+# Using combined violin and boxplots to visualize possible relationships:
 ggplot(Auto_wrap, aes(y = values, x = mpg01)) +
     geom_violin() +
     geom_boxplot(width=0.1) +
@@ -192,9 +219,10 @@ ggplot(Auto_wrap, aes(y = values, x = mpg01)) +
 ```
 
 ```{r 11_b_factor}
-
+# REDO THIS SECTION using geom_mosaic
 count_Auto <- count(Auto, origin, mpg01)
 kable(spread(count_Auto, mpg01, n, fill = 0))
+
 
 ggplot(data = Auto) +
   geom_count(mapping = aes(x = origin, y = mpg01))
