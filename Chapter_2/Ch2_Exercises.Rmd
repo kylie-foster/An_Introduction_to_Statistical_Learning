@@ -1,0 +1,587 @@
+---
+title: 'An Introduction to Statistical Learning: Chapter 2 Applied Exercises'
+author: "Kylie Foster"
+date: "1 May 2019"
+output:
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("GGally")
+#install.packages("skimr")
+library (MASS)
+library(GGally) # for ggpairs
+library(tidyverse) # loads packages including ggplot2, dplyr
+library(skimr) # for nicer summaries using skim
+library(cowplot) # for plot_grid
+```
+
+
+## Exercise 8
+
+This exercise relates to the `College` data set, which can be found in the file `College.csv`. It contains a number of variables for 777 different universities and colleges in the US. The variables are:
+
+- `Private`: Public/private indicator
+
+- `Apps`: Number of applications received
+
+- `Accept`: Number of applicants accepted
+
+- `Enroll`: Number of new students enrolled
+
+- `Top10perc`: New students from top 10% of high school class
+
+- `Top25perc`: New students from top 25% of high school class
+
+- `F.Undergrad`: Number of full-time undergraduates
+
+- `P.Undergrad`: Number of part-time undergraduates
+
+- `Outstate`: Out-of-state tuition
+
+- `Room.Board`: Room and board costs
+
+- `Books`: Estimated book costs
+
+- `Personal`: Estimated personal spending
+
+- `PhD`: Percent of faculty with Ph.D.’s
+
+- `Terminal`: Percent of faculty with terminal degree
+
+- `S.F.Ratio`: Student/faculty ratio
+
+- `perc.alumni`: Percent of alumni who donate
+
+- `Expend`: Instructional expenditure per student
+
+- `Grad.Rate`: Graduation rate
+
+**(a) Use the `read.csv()` function to read the data into R. Call the loaded data college. Make sure that you have the directory set to the correct location for the data.**
+
+```{r 8a}
+# suppressing messages from readr
+options(readr.num_columns = 0)
+
+college <- read_csv('College.csv')
+sum(is.na(college)) # checking for missing values (this should be zero)
+
+```
+
+**(b) Look at the data using the `fix()` function.** You should notice that the first column is just the name of each university.We don’t really want R to treat this as data. However, it may be handy to have these names for later. Try the following commands:
+
+`rownames (college )=college [,1]`
+`fix (college )`
+
+You should see that there is now a row.names column with the
+name of each university recorded. This means that R has given
+each row a name corresponding to the appropriate university. R
+will not try to perform calculations on the row names. However,
+we still need to eliminate the first column in the data where the
+names are stored. Try
+`college =college [,-1]`
+`fix (college )`
+
+Now you should see that the first data column is Private. Note
+that another column labeled row.names now appears before the
+Private column. However, this is not a data column but rather
+the name that R is giving to each row.
+
+```{r 8b}
+# suppressing messages from readr
+options(readr.num_columns = 0)
+
+college <- read_csv('College.csv')
+sum(is.na(college)) # checking for missing values (this should be zero)
+
+#fix(college)
+college <- as.data.frame(college)
+rownames(college) <- college[,1]
+#fix (college)
+
+college <- college[,-1]
+#fix(college)
+```
+
+**(c) i. Use the `summary()` function to produce a numerical summary of the variables in the data set.**
+
+```{r 8_ci}
+summary(college)
+
+```
+
+**ii. Use the `pairs()` function to produce a scatterplot matrix of the first ten columns or variables of the data.** Recall that you can reference the first ten columns of a matrix `A` using
+`A[,1:10]`.
+
+```{r 8_cii, fig.height = 19, fig.width = 15, message = FALSE}
+
+# Plotting matrix of pair-wise scatterplots of first 10 variables
+ggpairs(select(college, 2:11)) 
+```
+
+
+**iii. Use the `plot()` function to produce side-by-side boxplots of `Outstate` versus `Private`.**
+
+```{r 8_ciii}
+ggplot(college, mapping = aes(x =Private, y = Outstate)) +
+  geom_boxplot()
+```
+
+
+**iv. Create a new qualitative variable, called `Elite`, by binning the `Top10perc variable`.** We are going to divide universities
+into two groups based on whether or not the proportion
+of students coming from the top 10% of their high school
+classes exceeds 50%.
+
+`Elite =rep ("No",nrow(college ))`
+
+`Elite [college$Top10perc >50]=" Yes"`
+
+`Elite =as.factor (Elite)`
+
+`college =data.frame(college ,Elite)`
+
+Use the `summary()` function to see how many elite universities
+there are. Now use the `plot()` function to produce
+side-by-side boxplots of `Outstate` versus `Elite`.
+
+```{r 8civ}
+
+college <- mutate(college, Elite = as.factor(case_when(Top10perc > 50 ~ "Yes", 
+                             Top10perc <= 50 ~ "No")))
+
+skim(select(college, Elite))
+
+ggplot(college, mapping = aes(x = Elite, y = Outstate)) +
+  geom_boxplot()
+```
+
+**v. Use the `hist()` function to produce some histograms with differing numbers of bins for a few of the quantitative variables.**
+You may find the command `par(mfrow=c(2,2))` useful:
+it will divide the print window into four regions so that four
+plots can be made simultaneously. Modifying the arguments
+to this function will divide the screen in other ways.
+
+```{r 8cv}
+# trying bin width of 100
+A <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Apps), binwidth = 100)
+
+B <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Accept), binwidth = 100)
+
+C <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Enroll), binwidth = 100)
+
+D <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Top10perc), binwidth = 100)
+
+plot_grid(A, B, C, D)
+
+# trying bin width of 10
+A <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Apps), binwidth = 10)
+
+B <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Accept), binwidth = 10)
+
+C <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Enroll), binwidth = 10)
+
+D <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Top10perc), binwidth = 10)
+
+plot_grid(A, B, C, D)
+
+# trying bin width of 1
+A <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Apps), binwidth = 1)
+
+B <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Accept), binwidth = 1)
+
+C <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Enroll), binwidth = 1)
+
+D <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Top10perc), binwidth = 1)
+
+plot_grid(A, B, C, D)
+
+# trying a mix of bin widths
+A <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Apps), binwidth = 1000)
+
+B <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Accept), binwidth = 1000)
+
+C <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Enroll), binwidth = 100)
+
+D <- ggplot(data = college) +
+  geom_histogram(mapping = aes(x = Top10perc), binwidth = 1)
+
+plot_grid(A, B, C, D)
+
+```
+
+**vi. Continue exploring the data, and provide a brief summary of what you discover.**
+
+Many of the variables are strongly positively correlated, e.g. `Accept` and `Apps` have a correlation coefficient of 0.943, `Apps` and `Enroll` 0.847, `Accept` and `Enroll` 0.912, `Top25perc` and `Top10perc` 0.892. So there it should be possible to reduce the number of variables without losing too much information.
+
+`Books` does not have a strong relationship with any of the other variables.
+
+There are some linear relationships between variables, e.g. between `Enroll` and `F.Undergrad`, `Apps` and `Accept`, `Apps` and `Enroll`, `Accept` and `Enroll`.
+
+There is a clear nonlinear relationship between `Top10perc` and `Top25perc`.
+
+
+The maximum graduation rate is `r max(college$Grad.Rate)`, which is higher than the expected maximum of 100.
+
+## Exercise 9
+
+This exercise involves the `Auto` data set studied in the lab. Make sure that the missing values have been removed from the data.
+
+**(a) Which of the predictors are quantitative, and which are qualitative?**
+
+```{r 9_a}
+# suppressing messages from readr
+options(readr.num_columns = 0)
+
+Auto <- read_csv("Auto.csv", na = c("", "NA", "?")) # loading data, making sure missing values (?s) are imported correctly
+Auto <- na.omit(Auto) # removing missing values
+sum(is.na(Auto)) # checking for missing values (this should be zero)
+
+Auto <- mutate_if(Auto, is.character, factor) # converting characters to factors
+Auto <- mutate(Auto, origin = as.factor(origin)) #converting origin to factor
+
+glimpse(Auto) # looking at the data
+```
+
+`mpg`, `displacement`, `horsepower`, `weight`, `acceleration`, and `year` are quantitative variables. `origin` and `name` are qualitative. `cylinder` appears to be quantiative, but only takes a few vaues (`r unique(as.factor(Auto$cylinders))`), so it could be better to treat this as a qualitative variable.
+
+**(b) What is the range of each quantitative predictor? You can answer this using the `range()` function.**
+
+Including `cylinder` as quantitative for now.
+
+```{r 9_b}
+
+max_Auto <- summarise_if(Auto, is.numeric, list(max)) # calculating max for all numeric variables in Auto
+
+min_Auto <- summarise_if(Auto, is.numeric, list(min)) # calculating min for all numeric variables in Auto
+
+kable(rbind(min_Auto, max_Auto)) # displaying min and max
+
+```
+
+**(c) What is the mean and standard deviation of each quantitative predictor?**
+
+```{r 9_c}
+# Mean:
+kable(mean_Auto <- summarise_if(Auto, is.numeric, list(mean))) # calculating and displaying mean for all numeric variables in Auto
+# Standard deviation:
+kable(sd_Auto <- summarise_if(Auto, is.numeric, list(sd))) # calculating and displaying mean for all numeric variables in Auto
+```
+
+**(d) Now remove the 10th through 85th observations. What is the range, mean, and standard deviation of each predictor in the subset of the data that remains?**
+
+
+```{r 9_d}
+# Removing 10th to 85th observations:
+Auto_short <- slice(Auto, -10:-85) # negatives indicate the rows should be dropped
+
+# Range calculation:
+max_Auto <- summarise_if(Auto_short, is.numeric, list(max)) # calculating max for all numeric variables in Auto
+min_Auto <- summarise_if(Auto_short, is.numeric, list(min)) # calculating min for all numeric variables in Auto
+kable(rbind(min_Auto, max_Auto)) # displaying min and max
+
+# Mean:
+kable(mean_Auto <- summarise_if(Auto_short, is.numeric, list(mean))) # calculating and displaying mean for all numeric variables in Auto
+
+# Standard deviation:
+kable(sd_Auto <- summarise_if(Auto_short, is.numeric, list(sd))) # calculating and displaying mean for all numeric variables in Auto
+```
+
+**(e) Using the full data set, investigate the predictors graphically, using scatterplots or other tools of your choice. Create some plots highlighting the relationships among the predictors. Comment on your findings.**
+
+```{r 9_e, fig.height = 15, fig.width = 15, message = FALSE}
+# suppressing messages from readr
+options(readr.num_columns = 0)
+
+Auto <- read_csv("Auto.csv", na = c("", "NA", "?")) # loading data, making sure missing values (?s) are imported correctly
+Auto <- na.omit(Auto) # removing missing values
+Auto <- mutate_if(Auto, is.character, factor) # converting characters to factors
+Auto <- mutate(Auto, origin = as.factor(origin)) #converting origin to factor
+
+# Plotting matrix of pair-wise scatterplots of all variables
+ggpairs(select(Auto, -name)) # not including name because it has too many categories
+
+```
+
+Some key points:
+
+- Many of the variables are strongly correlated. For example, `weight` has a correlation coefficient with an absolute value higher than 0.8 with `mpg`, `cylinders`, `displacement` and `horsepower`. 
+- The correlation between `weight` and `mpg` is negative (a heavier vehicle is less fuel efficient). Similarly, the correlation between `cylinders` and `mpg` is negative (more cylinders is associated with lower fuel efficiency).
+- The distribution of `mpg` is slightly right skewed.
+- There are some linear relationships between some variables. e.g. between: `cylinders` and `displacement`, `displacement` and `horsepower`, `displacement` and `weight`, `horsepower` and `weight`.
+- Vehicles become slightly more fuel efficient over time.
+- `origin` affects `mpg` (e.g. higher `mpg` for `origin = 3`), but that could be because of changes in `origin` over time (because `year` also affects `mpg`) rather than a direct effect of `origin` on `mpg`.
+
+**(f) Suppose that we wish to predict gas mileage (mpg) on the basis of the other variables. Do your plots suggest that any of the other variables might be useful in predicting mpg? Justify your answer.**
+
+```{r 9_f, fig.height = 12, fig.width = 15, message = FALSE, warning = FALSE}
+# suppressing messages from readr
+options(readr.num_columns = 0)
+
+Auto <- read_csv("Auto.csv", na = c("", "NA", "?")) # loading data, making sure missing values (?s) are imported correctly
+Auto <- na.omit(Auto) # removing missing values
+# Not converting characters and origin to factors because this causes problems with `gather`
+
+Auto_wrap <- gather(select(Auto, -name), -mpg, key = "vars", value = "values") # getting data in the right format to use for facet_wrap. Excluding `name` because including it messes up the x-axes for facet_wrap 
+
+  ggplot(Auto_wrap, aes(x = values, y = mpg)) +
+    geom_point() +
+    geom_smooth() + # adding a smoothed line to help identify any trends in the data
+    facet_wrap(~ vars, scales = "free_x", ncol = 2) # free_x means the x-axis scales can differ between the subplots
+
+```
+
+All of the variables except `name` look like they would be useful for predicting, with `displacement`, `horsepower`, `weight` and `cylinder` looking particularly useful because of their strong correlations with `mpg` (see above figure and correlation coefficients in 9(e)). `origin` may not be useful, because the relationship with `mpg` is relatively weak. `name` is not very useful (no clear relationship with `mpg` and it would introduce way too many dummy variables).
+
+## Exercise 10
+
+**(a) To begin, load in the `Boston` data set. The Boston data set is part of the `MASS` library in R. How many rows are in this data set? How many columns? What do the rows and columns represent?**
+
+```{r 10a}
+library(MASS)
+# Now the data set is contained in the object Boston.
+glimpse(Boston)
+
+#Read about the data set:
+#?Boston
+```
+
+The data set has 506 rows and 14 columns. The rows represent towns. The columns represent the following variables:
+
+ - `crim`: per capita crime rate by town.
+ - `zn`: proportion of residential land zoned for lots over 25,000 sq.ft.
+ - `indus`: proportion of non-retail business acres per town.
+ - `chas`: Charles River dummy variable (= 1 if tract bounds river; 0 otherwise).
+ - `nox`: nitrogen oxides concentration (parts per 10 million).
+ - `rm`: average number of rooms per dwelling.
+ - `age`: proportion of owner-occupied units built prior to 1940.
+ - `dis`: weighted mean of distances to five Boston employment centres.
+ - `rad`: index of accessibility to radial highways.
+ - `tax`: full-value property-tax rate per \$10,000.
+ - `ptratio`: pupil-teacher ratio by town.
+ - `black`: 1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town.
+ - `lstat`: lower status of the population (percent).
+ - `medv`: median value of owner-occupied homes in \$1000s.
+
+**(b) Make some pairwise scatterplots of the predictors (columns) in this data set. Describe your findings.**
+
+```{r 10_b, fig.height = 20, fig.width = 15, message = FALSE}
+Boston_10b <- as_tibble(Boston) %>%
+  mutate_if(is.integer, factor) # converting integers to factors
+
+# Plotting matrix of pair-wise scatterplots of all variables
+ggpairs(Boston_10b) 
+
+```
+
+Looking more closely at just a few variables that appear to have a strong relationship (there are also other correlations shown in the above plot that could be interesting to explore).
+
+```{r 10_b_more, message=FALSE}
+
+lstat_vs_medv <- ggplot(Boston_10b, aes(x = lstat, y = medv)) +
+                 geom_point() +
+                 geom_smooth() +
+                 theme_bw()
+
+rm_vs_medv <- ggplot(Boston_10b, aes(x = rm, y = medv)) +
+                 geom_point() +
+                 geom_smooth() +
+                 theme_bw()
+
+dis_vs_nox <- ggplot(Boston_10b, aes(x = dis, y = nox)) +
+                 geom_point() +
+                 geom_smooth() +
+                 theme_bw()
+
+rad_vs_nox <- ggplot(Boston_10b, aes(x = rad, y = nox)) +
+                 geom_boxplot() +
+                 theme_bw()
+                 
+plot_grid(lstat_vs_medv, rm_vs_medv, dis_vs_nox, rad_vs_nox) # plotting all four plots in a grid together
+```
+
+All of the above pairwise comparisons above indicate nonlinear relationships between the relevant variables:
+
+- Higher `lstat` values are associated with lower `medv` values. It makes sense that a higher percentage of lower status population is associated with lower median value of owner-occuppied homes. 
+- Higher `rm` values tend to be associated with higher `medv` values. It makes sense that a higher average number of rooms per dwelling is associated with a higher median value of homes. 
+- Higher `dis` values are associated with lower `nox` values. A higher `dis` (weighted mean of distances to five Boston employment centres) could be associated with a less built up area, which explains the association with a lower `nox` (nitrogen oxides concentration) value.
+- Higher `rad` values are associated with higher `nox` values, i.e. more access to radial highways (higher `rad`) is associated with higher nitrogen oxides concentration (higher `nox`).
+
+Another interesting thing to note is that `indus` and `tax` are bimodal.
+
+**(c) Are any of the predictors associated with per capita crime rate? If so, explain the relationship.**
+
+```{r 10_c, fig.height = 12, fig.width = 15, warning=FALSE, message = FALSE}
+Boston_wrap <- as_tibble(Boston) %>%
+  gather(-crim, key = "vars", value = "values") # getting data in the right format to use for facet_wrap. Excluding `name` because including it messes up the x-axes for facet_wrap 
+
+  ggplot(Boston_wrap, aes(x = values, y = crim)) +
+    geom_point() +
+    geom_smooth() +
+    facet_wrap(~ vars, scales = "free_x", ncol = 3) +
+    theme_bw(base_size = 20)
+
+```
+
+Not many of the variables have a strong association with `crim`. However, `black`, `chas`, `lstat` and `medv` do show some association with `crim`. 
+
+- A higher value of `black` is associated with a lower `crim` value. This relationship looks close to linear.
+- If the tract bounds the Charles River (`chas = 1`) the `crim` value tends to be relatively low.
+- If a higher proportion of the population is of a lower status then the `crim` value tends to be higher.
+- A lower median house value is associated with a higher crime rate.
+
+Due to the skewed nature of many of the variables it may be necessary to transform them to get better results.
+
+**(d) Do any of the suburbs of Boston appear to have particularly high crime rates? Tax rates? Pupil-teacher ratios? Comment on the range of each predictor.**
+
+```{r 10_d, message = FALSE}
+Boston_10d <- as_tibble(Boston) %>%
+  mutate_if(is.integer, factor)# converting integers to factors
+
+crim_hist <- ggplot(Boston_10d) + 
+  geom_histogram(mapping = aes(x = crim))
+
+crim_box <- ggplot(Boston_10d, mapping = aes(y = crim)) +
+  geom_boxplot()
+
+tax_hist <- ggplot(Boston_10d) + 
+  geom_histogram(mapping = aes(x = tax))
+
+tax_box <- ggplot(Boston_10d, mapping = aes(y = tax)) +
+  geom_boxplot()
+
+ptratio_hist <- ggplot(Boston_10d) + 
+  geom_histogram(mapping = aes(x = ptratio))
+
+ptratio_box <- ggplot(Boston_10d, mapping = aes(y = ptratio)) +
+  geom_boxplot()
+
+plot_grid(crim_hist, crim_box, tax_hist, tax_box, ptratio_hist, ptratio_box, ncol = 2)
+
+summary(Boston_10d)
+```
+
+There are a number of suburbs that have particularly high crime rates (most suburbs have a low crime rate, but the distribution has a long right tail).
+
+The distribution of `tax` is bimodal, there is two different clusters of suburbs, one cluster with a lower value of `tax` and one cluster with a particularly high value of `tax`.
+
+There are no outliers indicating suburbs with particularly high pupil-teacher ratios, instead the distribution is skewed towards high ratios.
+
+**(e) How many of the suburbs in this data set bound the Charles river?**
+
+`r sum(Boston$chas)` suburbs bound the Charles River (`sum(Boston$chas)`).
+
+**(f) What is the median pupil-teacher ratio among the towns in this data set?**
+
+Median = `r median(Boston$ptratio)` (`median(Boston$ptratio)`).
+
+**(g) Which suburb of Boston has lowest median value of owneroccupied homes? What are the values of the other predictors for that suburb, and how do those values compare to the overall ranges for those predictors? Comment on your findings.**
+
+```{r 10_g}
+# suburb of Boston has lowest median value of owneroccupied homes
+which(Boston$medv == min(Boston$medv))
+
+# values of predictors for suburbs with the lowest median value of owneroccupied homes
+low_med <- filter(Boston, medv == min(medv))
+
+# Values for comparison:
+max_Bost <- summarise_if(Boston, is.numeric, list(max)) # calculating max for all numeric variables in Boston
+min_Bost <- summarise_if(Boston, is.numeric, list(min)) # calculating min for all numeric variables in Boston
+med_Bost <- summarise_if(Boston, is.numeric, list(median)) # calculating median for all numeric variables in Boston
+
+row_labels <- enframe(c("lowest medv", "lowest medv", "maximum", "median", "minimum"), name = NULL)
+
+kable(cbind(row_labels, rbind(low_med, max_Bost, med_Bost, min_Bost)))
+
+```
+
+For the suburbs with lowest median value of owneroccupied homes:
+
+- The crime rate (`crim`) is relatively high compared to other suburbs, it would be expected that a poorer neighbourhood would have a higher crime rate.
+
+- The proportion of residential land zoned for lots over 25,000 sq. ft. (`zn`) is equal to the minimum for all suburbs (0), so they are likely to be in a built-up area.
+
+- The proportion of non-retail business acres per town (`indus`) is higher than the median.
+
+- They do not bound the Charles River.
+
+- `nox` values are relatively high. Poorer, more built-up area has higher levels of pollution.
+
+- Average number of rooms per dwelling (rm) is lower than the median. Lower value houses are most likely smaller.
+
+- 100% of owner-occupied units were built prior to 1940.
+
+- Weighted mean of distances to five Boston employment centres (`dis`) is very low. This makes sense for a more built-up, poor suburb.
+
+- Index of accessibility to radial highways (`rad`) is equal to the maximum for all suburbs.
+
+- Property-tax rate is relatively high. This is a bit surprising.
+
+- Pupil-teacher ratio is relatively high (overcrowded classrooms).
+
+- `black` is close to the median in one case and equal to the maximum in the other.
+
+- Percentage lower status of the population is relatively high.
+
+**(h) In this data set, how many of the suburbs average more than seven rooms per dwelling? More than eight rooms per dwelling? Comment on the suburbs that average more than eight rooms per dwelling.**
+
+```{r 10_h, fig.height = 10}
+
+# suburbs average more than seven rooms per dwelling
+filter(Boston, rm > 7) %>%
+  count()
+
+# suburbs average more than eight rooms per dwelling
+filter(Boston, rm > 8) %>%
+  count()
+
+# creating new dummy variable indicating if there are more than eight rooms per dwelling of not.
+Boston_dummy <- mutate(Boston, rm_dummy = as.factor(case_when(rm > 8 ~ "Yes", 
+                             rm <= 8 ~ "No")))
+
+Boston_dummy_long <- gather(Boston_dummy, key="measure", value="value", -rm_dummy)
+
+ggplot(Boston_dummy_long, aes(x= rm_dummy, y = value, fill = rm_dummy)) + 
+    geom_violin() + 
+    facet_wrap(~measure, scales = 'free_y', ncol = 3) +
+    theme_bw() +
+    labs(fill = "> 8 rooms per dwelling")
+
+# comparing medians:
+med_Bost <- summarise_if(Boston, is.numeric, list(median)) # calculating median for all numeric variables in Boston
+med_Bost_8rm <- summarise_if(filter(Boston, rm > 8), is.numeric, list(median)) # calculating median for all numeric variables in Boston
+
+kable(rbind(med_Bost_8rm, med_Bost))
+```
+
+The top row in the table above shows the median values for the suburb with average number of rooms per dwelling greater than 8, the bottom row shows the median values for all suburbs. 
+
+Some key points of interest:
+
+- The median crime rate is higher for the suburbs with average number of rooms per dwelling greater than 8. I find this surprising. However, the range of crime rates is lower.
+
+- The proportional of non-retail business acres per town is low (less industry).
+
+- The tax rate is slightly lower.
+
+- Percentage of lower status of the population is substantially less.
+
+- Median value of homes is substantially higher.
