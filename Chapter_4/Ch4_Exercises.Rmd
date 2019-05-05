@@ -25,7 +25,7 @@ library (class) # for knn()
 library(ggmosaic) # for gg_mosaic
 ```
 
-Still need to do Ex 11f, Ex 11g, Ex13
+Still need to do Ex13
 
 ## Exercise 10
 
@@ -517,56 +517,56 @@ Best QDA model has an accuracy of 91.1%.
 #### (f) Perform logistic regression on the training data in order to predict `mpg01` using the variables that seemed most associated with `mpg01` in (b). What is the test error of the model obtained?
 
 ```{r 11_f}
+# Set random seed, for reproducibility.
+set.seed(10)
+
+Auto_exc_name <- select(Auto, -name) # excluding name because for some reason including it
+# causes difficulty with  predict 
+
+# create a list of random number ranging from 1 to number of rows from 
+# actual data and 80% of the data into training data  
+rand_index <- sort(sample(nrow(Auto_exc_name), nrow(Auto_exc_name)*0.8))
+
+# creating training data set by selecting the output row values
+train_Auto <- Auto_exc_name[rand_index, ]
+
+#creating test data set by not selecting the output row values
+test_Auto <- Auto_exc_name[-rand_index, ]
+
 # Logistic regression
 # All variables as predictors except name
-# log_model <- glm(mpg01 ~.-name, data = Auto, family = binomial, subset = rand_index) # fitting qda with all predictors except name using training day
-# log_probs <- predict(log_model, test_Auto, type = "response")$class # predictions for test set (not training set)
-# log_class <- as.factor(case_when(log_probs > 0.5 ~ "1", 
-#                              log_probs <= 0.5 ~ "0")) # converting probabilities to class predictions
-# (log_conf <- table(log_class, test_Auto$mpg01)) # confusion matrix
-# mean(log_class == test_Auto$mpg01) # test error
-# 
-# # Using only the least noisy predictors identified in (c)
-# log_model <- glm(mpg01 ~ displacement + horsepower + origin + weight + cylinders, data = Auto, family = binomial, subset = rand_index) # fitting qda with all predictors except name using training day
-# log_probs <- predict(log_model, test_Auto, type = "response")$class # predictions for test set (not training set)
-# log_class <- as.factor(case_when(log_probs > 0.5 ~ "1", 
-#                              log_probs <= 0.5 ~ "0")) # converting probabilities to class predictions
-# (log_conf <- table(log_class, test_Auto$mpg01)) # confusion matrix
-# mean(log_class == test_Auto$mpg01) # test error
+log_model <- glm(mpg01 ~. -mpg, data = Auto_exc_name, family = binomial, subset = rand_index) 
+log_probs <- predict(log_model, test_Auto , type = "response") # predictions for test set (not training set)
+log_class <- as.factor(case_when(log_probs > 0.5 ~ "1", 
+                             log_probs <= 0.5 ~ "0")) # converting probabilities to class predictions
+kable(log_conf <- table(log_class, test_Auto$mpg01)) # confusion matrix
+mean(log_class == test_Auto$mpg01) # test error
 
-glimpse(rand_index)
-glimpse(Weekly)
-
-# train <- (Weekly$Year < 2009) # a Boolean vector (elements are TRUE or FALSE) the same length as 
-# # Year. The elements of the vector that correspond to observations that occurred before 2009 
-# # are set to TRUE, whereas those that correspond to observations after 2009 are set to FALSE
-# 
-# # fitting logistic with Lag2 as the only predictor, using just the data from 1990 to 2008:
-# log_model <- glm(Direction ~ Lag2, data = Weekly, family = binomial, subset = train) 
-# 
-# # predicting probability of Up for test set (not training set):
-# log_probs <- predict(log_model, Weekly[!train, ], type = "response") 
-# 
-# # converting probabilities to class predictions:
-# glm_pred <- as.factor(case_when(log_probs > 0.5 ~ "Up", 
-#                              log_probs <= 0.5 ~ "Down")) 
-# 
-# # confusion matrix:
-# kable(log_conf <- table(glm_pred, Weekly$Direction[!train])) 
-# 
-# mean(glm_pred == Weekly$Direction[!train]) # accuracy
+# Using only the least noisy predictors identified in (c)
+log_model <- glm(mpg01 ~ displacement + horsepower + origin + 
+                   weight + cylinders, data = Auto_exc_name, family = binomial, subset = rand_index) 
+log_probs <- predict(log_model, test_Auto , type = "response") # predictions for test set (not training set)
+log_class <- as.factor(case_when(log_probs > 0.5 ~ "1", 
+                             log_probs <= 0.5 ~ "0")) # converting probabilities to class predictions
+kable(log_conf <- table(log_class, test_Auto$mpg01)) # confusion matrix
+mean(log_class == test_Auto$mpg01) # test error
+  
 ```
+
+The best logistic model has a test accuracy of 91.1%.
 
 #### (g) Perform KNN on the training data, with several values of K, in order to predict `mpg01`. Use only the variables that seemed most associated with `mpg01` in (b). What test errors do you obtain? Which value of K seems to perform the best on this data set?
 
 ```{r 11_g}
-standardized_Auto <- scale(select(Auto, -c(name, mpg01))) # should really do this using only the test set max, min etc
+
+standardized_Auto <- scale(select(Auto, -c(name, mpg01, mpg))) # should really do this using only the test set max, min etc
 
 glimpse(standardized_Auto)
 
 # Set random seed, for reproducibility.
 set.seed(1)
-#create a list of random number ranging from 1 to number of rows from actual data and 80% of the data into training data  
+#create a list of random number ranging from 1 to number of rows from actual data and 80% 
+# of the data into training data  
 rand_index <- sort(sample(nrow(standardized_Auto), nrow(standardized_Auto)*0.8))
 # creating training data set by selecting the output row values
 train_X <- standardized_Auto[rand_index, ]
@@ -575,61 +575,32 @@ test_X <- standardized_Auto[-rand_index, ]
 
 train_mpg01 <- Auto[rand_index, ]$mpg01 # class labels for training data
 test_mpg01 <- Auto[-rand_index, ]$mpg01 # class labels for training data
- 
-
-# k = 1
-knn_pred <- knn(train_X, test_X, train_mpg01, k = 1)
-(knn_conf <- table(knn_pred, test_mpg01)) # confusion matrix
-acc_1 <- mean(knn_pred == test_mpg01) # test error
-
-# k = 2
-knn_pred <- knn(train_X, test_X, train_mpg01, k = 2)
-(knn_conf <- table(knn_pred, test_mpg01)) # confusion matrix
-acc_2 <- mean(knn_pred == test_mpg01) # test error
-
-# k = 3
-knn_pred <- knn(train_X, test_X, train_mpg01, k = 3)
-(knn_conf <- table(knn_pred, test_mpg01)) # confusion matrix
-acc_3 <- mean(knn_pred == test_mpg01) # test error
-
-# k = 5
-knn_pred <- knn(train_X, test_X, train_mpg01, k = 5)
-(knn_conf <- table(knn_pred, test_mpg01)) # confusion matrix
-acc_5 <- mean(knn_pred == test_mpg01) # test error
-
-# k = 10
-knn_pred <- knn(train_X, test_X, train_mpg01, k = 10)
-(knn_conf <- table(knn_pred, test_mpg01)) # confusion matrix
-acc_10 <- mean(knn_pred == test_mpg01) # test error
-
-K <- c(1, 2, 3, 5, 10)
-acc <- c(acc_1, acc_2, acc_3, acc_5, acc_10)
-data_acc <- as_tibble(K, acc)
-
-ggplot(data = data_acc, aes(x = K, y = acc)) +
-  geom_point()
 
 knn_Auto <- function(k_num){
+  set.seed(100)
   knn_pred <- knn(train_X, test_X, train_mpg01, k = k_num)
   acc <- mean(knn_pred == test_mpg01) # test error
   return(acc)
 }
 
-test_error <- matrix(nrow = 20, ncol = 1)
-for (k_num in 1:20) {
-  knn_Auto(k_num)
+test_error <- NULL
+counter <- 0
+for (k_num in seq(1, by = 2, len = 10)) {
+  counter <- counter + 1
+  test_error[counter] <- knn_Auto(k_num)
   #test_error[k_num, ] <- acc
   #acc
 }
 
-k_num <- 1:20
-(data_acc <- as_tibble(k_num, test_error))
+k_num <- seq(1, by = 2, len = 10) # using a sequence of odd numbers to avoid the need for tie-breaks
+(data_acc <- data.frame(cbind(k_num, test_error)))
 
 ggplot(data = data_acc, aes(x = k_num, y = test_error)) +
   geom_point()
 
 ```
 
+Best test accuracy is 94.9% for K = 13 (and 15 and 19).
 
 ## Exercise 12
 
@@ -715,3 +686,22 @@ PlotPower(1:10, 3)
 ## Exercise 13
 
 #### Using the `Boston` data set, fit classification models in order to predict whether a given suburb has a crime rate above or below the median. Explore logistic regression, LDA, and KNN models using various subsets of the predictors. Describe your findings.
+
+```{r 13_EDA, fig.height=10}
+glimpse(Boston)
+
+# Creating a binary variable, `crim01`, that contains a 1 if `crim` contains a 
+# value above its median, and a 0 if `crim` contains a value below its median
+Boston_crim01 <- mutate(Boston, crim01 = as.factor(case_when(crim > median(crim) ~ 1, 
+                             crim <= median(crim) ~ 0))) 
+
+# getting data in the right format to use for facet_wrap. Excluding name and origin:
+Boston_wrap <- gather(Boston_crim01, -c("crim01"), key = "vars", value = "values") 
+
+# Using combined violin and boxplots to visualize possible relationships:
+ggplot(Boston_wrap, aes(y = values, x = crim01)) +
+    geom_violin() +
+    geom_boxplot(width=0.1) +
+    facet_wrap(~ vars, scales = "free_y", ncol = 2)
+
+```
