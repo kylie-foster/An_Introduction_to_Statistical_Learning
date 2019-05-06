@@ -284,18 +284,37 @@ code > span.ot { color: #007020; }
 <h2><code>cv.glm()</code></h2>
 <p><code>cv.glm(data, glmfit, cost, K)</code></p>
 <p>Calculates the estimated K-fold cross-validation prediction error for generalized linear models.</p>
-<p>Inputs:</p>
+<div id="inputs" class="section level3">
+<h3>Inputs:</h3>
 <ul>
 <li><p><code>data</code>: A matrix or data frame containing the data. The rows should be cases and the columns correspond to variables, one of which is the response.</p></li>
 <li><p><code>glmfit</code>: An object of class “glm” containing the results of a generalized linear model fitted to data (using <code>glm()</code>).</p></li>
 <li><p><code>cost</code>: A function of two vector arguments specifying the cost function for the cross-validation. The first argument to <code>cost</code> should correspond to the observed responses and the second argument should correspond to the predicted or fitted responses from the generalized linear model. <code>cost</code> must return a non-negative scalar value. <strong>The default is the average squared error function.</strong></p></li>
-<li><p><code>K</code>: The number of groups into which the data should be split to estimate the cross-validation prediction error. The value of <code>K</code> must be such that all groups are of approximately equal size. If the supplied value of <code>K</code> does not satisfy this criterion then it will be set to the closest integer which does and a warning is generated specifying the value of <code>K</code> used. <strong>The default is to set <code>K</code> equal to the number of observations in data which gives the usual leave-one-out cross-validation.</strong></p></li>
+<li><p><code>K</code>: The number of groups into which the data should be split to estimate the cross-validation prediction error. <code>K = 10</code> is a common choice. The value of <code>K</code> must be such that all groups are of approximately equal size. If the supplied value of <code>K</code> does not satisfy this criterion then it will be set to the closest integer which does and a warning is generated specifying the value of <code>K</code> used. <strong>The default is to set <code>K</code> equal to the number of observations in data which gives the usual leave-one-out cross-validation.</strong></p></li>
+</ul>
+</div>
+<div id="outputs" class="section level3">
+<h3>Outputs</h3>
+<p>The returned value is a list with the following components:</p>
+<ul>
+<li><p><code>call</code>: the original call to <code>cv.glm</code>.</p></li>
+<li><p><code>K</code>: the value of <code>K</code> used for the K-fold cross validation.</p></li>
+<li><p><code>delta</code>: a vector of length two. The first component is the raw cross-validation estimate of prediction error. The second component is the adjusted cross-validation estimate. The adjustment is designed to compensate for the bias introduced by not using leave-one-out cross-validation.</p></li>
+</ul>
+<p>When the default <code>cost</code> is used and Leave-One-Out Cross-Validation is performed the two numbers associated with <code>delta</code> are essentially the same and correspond to: correspond to: <span class="math inline">\(CV_{(n)} = \frac{1}{n}\Sigma^n_{i=1} MSE_i\)</span> (where n is the number of rows in the data set and therefore the number of models). When the default <code>cost</code> is used and we instead perform k-fold CV, then the two numbers associated with delta differ slightly. The first is the standard k-fold CV estimate: <span class="math inline">\(CV_{(k)} = \frac{1}{k}\Sigma^k_{i=1}MSE_i\)</span>. The second is a bias corrected version.</p>
+<ul>
+<li><code>seed</code>: the value of <code>.Random.seed</code> when <code>cv.glm</code> was called.</li>
 </ul>
 <p>Package: <code>boot</code></p>
 <p>Sources:</p>
 <ul>
-<li><a href="https://stat.ethz.ch/R-manual/R-devel/library/boot/html/cv.glm.html" class="uri">https://stat.ethz.ch/R-manual/R-devel/library/boot/html/cv.glm.html</a></li>
+<li><p><a href="https://stat.ethz.ch/R-manual/R-devel/library/boot/html/cv.glm.html" class="uri">https://stat.ethz.ch/R-manual/R-devel/library/boot/html/cv.glm.html</a></p></li>
+<li><p>ISL</p></li>
 </ul>
+</div>
+</div>
+<div id="boot" class="section level2">
+<h2>boot()</h2>
 </div>
 </div>
 </article>
