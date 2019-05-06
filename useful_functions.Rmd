@@ -90,9 +90,75 @@ Source: Rdocumentation
 
 - use `as_tibble()` instead of `as.tibble()`
 
+---
+
+# ISL Chapter 3
+
+## `lm()`
+
+`lm(y ∼ x, data = data)`: fits `x`
+
+`lm(y ∼ x1 + x2, data = data)`: fits `x2` and `x1`
+
+`lm(y ∼., data = data)`: fits all variables in `data`
+
+`lm(y ∼. -x1, data = data)`: fits all variables in `data` except `x1`
+
+`lm(y ~ x1:x2, data = data)`: includes the interaction term `x1` x `x2` as a predictor.
+
+`lm(y ~ x1*x2, data = data)`: includes `x1`, `x2` and the interaction term `x1` x `x2`; it is a shorthand for
+`lstat` + `age` + `lstat:age` 
+
+`lm(y ~ poly(x, 5), data = data)`: fits `x`, `x^2`, `x^3`, `x^4` and `x^5`.
+
+`lm(y ~ .^2)`: creates all combinations of two-way interactions. Does NOT square the terms.
+
+`lm(y ∼ x + 0)`: regression without an intercept term.
+
+- `predict()`
+
+- `geom_smooth()`
+
+- `residuals()`
+
+- `rstudent()`
+
+- `which.max()`: identifies the index of the largest element of a vector.
+
+- `hatvalues()`: need to find out what this does.
+
+- `I()`
+
+- `contrasts()`
+
+- `factor(, ordered=TRUE)`
+
+## `confit`
+
+Computes confidence intervals for one or more parameters in a fitted model. 
+
+`confint(object, parm, level = 0.95, …)`
+
+Arguments/Inputs:
+
+- object: a fitted model object.
+
+- parm: a specification of which parameters are to be given confidence intervals, either a vector of numbers or a vector of names. If missing, all parameters are considered.
+
+- level: the confidence level required (0.95 is the default).
+
+Value/Output:
+
+A matrix (or vector) with columns giving lower and upper confidence limits for each parameter.
+
+---
+
 # ISL Chapter 4
 
 - `glm()`
+
+If we use `glm()` to fit a model without passing in the `family` argument, then it performs linear regression,
+just like the `lm()` function.
 
 - `predict()`
 
@@ -123,3 +189,55 @@ classifier.
     geom_violin() +
     geom_boxplot(width=0.1) +
     facet_wrap(~ vars, scales = "free_y", ncol = 2)`
+    
+---
+    
+# ISL Chapter 5
+
+## `sample()`
+
+`sample(x, size, replace = FALSE, prob = NULL)`
+
+`sample()` generates a sample of size `size` from the data frame or vector `x`, either with or without replacement.
+
+Inputs:
+
+- `x`: either a vector of one or more elements from which to choose, or a positive integer.
+
+- `size`:	size of the sample to choose.
+
+- `replace`: should sampling be with replacement? (TRUE or FALSE)
+
+- `prob`:	probability weights for obtaining the elements of the vector being sampled
+
+It's a good idea to use `set.seed()` before using `sample()` for reproducibility.
+
+No package required (this is a base R package).
+
+Sources: 
+
+- http://www.datasciencemadesimple.com/sample-function-in-r/
+
+- https://www.rdocumentation.org/packages/base/versions/3.5.3/topics/sample
+
+## `cv.glm()`
+
+`cv.glm(data, glmfit, cost, K)`
+
+Calculates the estimated K-fold cross-validation prediction error for generalized linear models.
+
+Inputs:
+
+- `data`: A matrix or data frame containing the data. The rows should be cases and the columns correspond to variables, one of which is the response.
+
+- `glmfit`: An object of class "glm" containing the results of a generalized linear model fitted to data (using `glm()`).
+
+- `cost`: A function of two vector arguments specifying the cost function for the cross-validation. The first argument to `cost` should correspond to the observed responses and the second argument should correspond to the predicted or fitted responses from the generalized linear model. `cost` must return a non-negative scalar value. **The default is the average squared error function.**
+
+- `K`: The number of groups into which the data should be split to estimate the cross-validation prediction error. The value of `K` must be such that all groups are of approximately equal size. If the supplied value of `K` does not satisfy this criterion then it will be set to the closest integer which does and a warning is generated specifying the value of `K` used. **The default is to set `K` equal to the number of observations in data which gives the usual leave-one-out cross-validation.**
+
+Package: `boot`
+
+Sources:
+
+- https://stat.ethz.ch/R-manual/R-devel/library/boot/html/cv.glm.html

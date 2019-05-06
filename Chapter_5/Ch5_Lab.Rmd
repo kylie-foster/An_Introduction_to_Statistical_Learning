@@ -1,0 +1,104 @@
+---
+title: "An Introduction to Statistical Learning: Chapter 5 Labs"
+author: "Kylie Foster"
+date: "6 May 2019"
+output: 
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("ISLR")
+library(MASS) # for lda, and contains a large collection of datasets
+#library(GGally) # for ggpairs
+library(tidyverse) # loads packages including ggplot2, dplyr
+#library(skimr) # for nicer summaries using skim
+#library(cowplot) # for plot_grid
+#library(car) # for vif()
+#library(olsrr) # for studentized residual plots
+library(knitr) # for kable
+#library(ggplot2)
+library (class) # for knn()
+library(ISLR) # data sets for the ISLR book
+library(boot) # for cv.glm()
+```
+
+## 5.3.1 The Validation Set Approach
+
+
+```{r sample}
+
+set.seed (1)
+train <- sample(392, 196)
+# returns a vector of 196 random values from the range 1 to 392 (without replacement).
+
+lm_fit <- lm(mpg ∼ horsepower, data=Auto, subset = train) # using the subset option in 
+# lm() to fit a linear regression using only the observations corresponding to the 
+# training set
+
+predict_all <- predict(lm_fit, Auto) # using predict() to estimate the response for all 392
+# observations
+attach (Auto)
+# estimated test MSE for the linear regression fit:
+mean((mpg - predict_all)[-train]^2) 
+# this calculates the MSE of the
+# 196 observations in the validation set. (takes the difference between 
+# predicted and actual, squares this difference and then finds the mean 
+# - it is the final step that results in a single number rather than a vector). 
+# The -train index selects only the observations that are not in the training set.
+
+```
+
+```{r quad_cubic}
+# quadratic regression (fits horsepower + horsepower^2)
+lm_fit2 <- lm(mpg ∼ poly(horsepower, 2), data = Auto, subset = train)
+mean((mpg - predict(lm_fit2, Auto))[-train]^2) # test MSE for quadratic regression
+
+# cubic regression (fits horsepower + horsepower^2 + horsepower^3)
+lm_fit3 <- lm(mpg ∼ poly(horsepower, 3), data = Auto, subset = train)
+mean((mpg -predict (lm_fit3 ,Auto))[-train ]^2) # test MSE for cubic regression
+
+```
+
+```{r different_train}
+
+set.seed(2) # using a different seed to get a different training/test split
+train <- sample(392, 196)
+# linear regression
+lm_fit <- lm(mpg ∼ horsepower, subset = train)
+mean((mpg - predict(lm_fit, Auto))[-train ]^2) # test MSE
+
+# quadratic regression
+lm_fit2 <- lm(mpg ∼ poly(horsepower, 2), data = Auto, subset = train)
+mean((mpg - predict(lm_fit2, Auto))[-train ]^2) # test MSE
+
+# cubic regression
+lm_fit3 <- lm(mpg ∼ poly(horsepower, 3), data = Auto, subset = train)
+mean((mpg - predict(lm_fit3, Auto))[-train ]^2) # test MSE
+
+```
+
+Although the actual MSE values are slightly different, the results are consistent for two different seed values: a model that
+predicts `mpg` using a quadratic function of `horsepower` performs better than
+a model that involves only a linear function of `horsepower`, and there is
+little evidence in favor of a model that uses a cubic function of `horsepower`.
+
+## 5.3.2 Leave-One-Out Cross-Validation
+
+```{r LOOCV}
+glm_fit <- glm(mpg ∼ horsepower, data = Auto) # using glm to fit a linear regression model
+coef(glm_fit)
+
+# identical results are obtained using lm()
+lm_fit <- lm(mpg ∼ horsepower, data = Auto)
+coef(lm_fit)
+
+glm_fit <- glm(mpg ∼ horsepower, data = Auto)
+cv_err <- cv.glm(Auto, glm_fit)
+cv_err$delta
+
+```
+

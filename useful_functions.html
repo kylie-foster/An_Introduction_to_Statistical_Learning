@@ -183,12 +183,56 @@ code > span.ot { color: #007020; }
 <li><p>You can use <code>fig.height =</code> and <code>fig.width =</code> in the heading of a code chunk to change the dimensions of all figures in that chunk in the Rmarkdown output.</p></li>
 <li><p>use <code>as_tibble()</code> instead of <code>as.tibble()</code></p></li>
 </ul>
+<hr />
+</div>
+</div>
+<div id="isl-chapter-3" class="section level1">
+<h1>ISL Chapter 3</h1>
+<div id="lm" class="section level2">
+<h2><code>lm()</code></h2>
+<p><code>lm(y ∼ x, data = data)</code>: fits <code>x</code></p>
+<p><code>lm(y ∼ x1 + x2, data = data)</code>: fits <code>x2</code> and <code>x1</code></p>
+<p><code>lm(y ∼., data = data)</code>: fits all variables in <code>data</code></p>
+<p><code>lm(y ∼. -x1, data = data)</code>: fits all variables in <code>data</code> except <code>x1</code></p>
+<p><code>lm(y ~ x1:x2, data = data)</code>: includes the interaction term <code>x1</code> x <code>x2</code> as a predictor.</p>
+<p><code>lm(y ~ x1*x2, data = data)</code>: includes <code>x1</code>, <code>x2</code> and the interaction term <code>x1</code> x <code>x2</code>; it is a shorthand for <code>lstat</code> + <code>age</code> + <code>lstat:age</code></p>
+<p><code>lm(y ~ poly(x, 5), data = data)</code>: fits <code>x</code>, <code>x^2</code>, <code>x^3</code>, <code>x^4</code> and <code>x^5</code>.</p>
+<p><code>lm(y ~ .^2)</code>: creates all combinations of two-way interactions. Does NOT square the terms.</p>
+<p><code>lm(y ∼ x + 0)</code>: regression without an intercept term.</p>
+<ul>
+<li><p><code>predict()</code></p></li>
+<li><p><code>geom_smooth()</code></p></li>
+<li><p><code>residuals()</code></p></li>
+<li><p><code>rstudent()</code></p></li>
+<li><p><code>which.max()</code>: identifies the index of the largest element of a vector.</p></li>
+<li><p><code>hatvalues()</code>: need to find out what this does.</p></li>
+<li><p><code>I()</code></p></li>
+<li><p><code>contrasts()</code></p></li>
+<li><p><code>factor(, ordered=TRUE)</code></p></li>
+</ul>
+</div>
+<div id="confit" class="section level2">
+<h2><code>confit</code></h2>
+<p>Computes confidence intervals for one or more parameters in a fitted model.</p>
+<p><code>confint(object, parm, level = 0.95, …)</code></p>
+<p>Arguments/Inputs:</p>
+<ul>
+<li><p>object: a fitted model object.</p></li>
+<li><p>parm: a specification of which parameters are to be given confidence intervals, either a vector of numbers or a vector of names. If missing, all parameters are considered.</p></li>
+<li><p>level: the confidence level required (0.95 is the default).</p></li>
+</ul>
+<p>Value/Output:</p>
+<p>A matrix (or vector) with columns giving lower and upper confidence limits for each parameter.</p>
+<hr />
 </div>
 </div>
 <div id="isl-chapter-4" class="section level1">
 <h1>ISL Chapter 4</h1>
 <ul>
-<li><p><code>glm()</code></p></li>
+<li><code>glm()</code></li>
+</ul>
+<p>If we use <code>glm()</code> to fit a model without passing in the <code>family</code> argument, then it performs linear regression, just like the <code>lm()</code> function.</p>
+<ul>
 <li><p><code>predict()</code></p></li>
 <li><p><code>lda()</code>. Used to fit a Linear Discriminant Analysis model. Part of the <code>MASS</code> library. The syntax is identical to that of <code>lm()</code>. LDA assumes that the variables are continuous, so it is not a good idea to use it when you have categorical variables (use logistic regression instead).</p></li>
 <li><p><code>qda()</code>. Used to fit a Quadratic Discriminant Analysis model. Part of the <code>MASS</code> library. Syntax is identical to that of <code>lda()</code>. Again, discriminant analysis assumes the variables are continous, so it is not a good idea to use it when you have categorical variables.</p></li>
@@ -211,7 +255,47 @@ code > span.ot { color: #007020; }
 <li>How to combine violin and boxplots:</li>
 </ul>
 <p><code>ggplot(Auto_wrap, aes(y = values, x = mpg01)) +     geom_violin() +     geom_boxplot(width=0.1) +     facet_wrap(~ vars, scales = &quot;free_y&quot;, ncol = 2)</code></p>
+<hr />
 </div>
+</div>
+</div>
+<div id="isl-chapter-5" class="section level1">
+<h1>ISL Chapter 5</h1>
+<div id="sample" class="section level2">
+<h2><code>sample()</code></h2>
+<p><code>sample(x, size, replace = FALSE, prob = NULL)</code></p>
+<p><code>sample()</code> generates a sample of size <code>size</code> from the data frame or vector <code>x</code>, either with or without replacement.</p>
+<p>Inputs:</p>
+<ul>
+<li><p><code>x</code>: either a vector of one or more elements from which to choose, or a positive integer.</p></li>
+<li><p><code>size</code>: size of the sample to choose.</p></li>
+<li><p><code>replace</code>: should sampling be with replacement? (TRUE or FALSE)</p></li>
+<li><p><code>prob</code>: probability weights for obtaining the elements of the vector being sampled</p></li>
+</ul>
+<p>It’s a good idea to use <code>set.seed()</code> before using <code>sample()</code> for reproducibility.</p>
+<p>No package required (this is a base R package).</p>
+<p>Sources:</p>
+<ul>
+<li><p><a href="http://www.datasciencemadesimple.com/sample-function-in-r/" class="uri">http://www.datasciencemadesimple.com/sample-function-in-r/</a></p></li>
+<li><p><a href="https://www.rdocumentation.org/packages/base/versions/3.5.3/topics/sample" class="uri">https://www.rdocumentation.org/packages/base/versions/3.5.3/topics/sample</a></p></li>
+</ul>
+</div>
+<div id="cv.glm" class="section level2">
+<h2><code>cv.glm()</code></h2>
+<p><code>cv.glm(data, glmfit, cost, K)</code></p>
+<p>Calculates the estimated K-fold cross-validation prediction error for generalized linear models.</p>
+<p>Inputs:</p>
+<ul>
+<li><p><code>data</code>: A matrix or data frame containing the data. The rows should be cases and the columns correspond to variables, one of which is the response.</p></li>
+<li><p><code>glmfit</code>: An object of class “glm” containing the results of a generalized linear model fitted to data (using <code>glm()</code>).</p></li>
+<li><p><code>cost</code>: A function of two vector arguments specifying the cost function for the cross-validation. The first argument to <code>cost</code> should correspond to the observed responses and the second argument should correspond to the predicted or fitted responses from the generalized linear model. <code>cost</code> must return a non-negative scalar value. <strong>The default is the average squared error function.</strong></p></li>
+<li><p><code>K</code>: The number of groups into which the data should be split to estimate the cross-validation prediction error. The value of <code>K</code> must be such that all groups are of approximately equal size. If the supplied value of <code>K</code> does not satisfy this criterion then it will be set to the closest integer which does and a warning is generated specifying the value of <code>K</code> used. <strong>The default is to set <code>K</code> equal to the number of observations in data which gives the usual leave-one-out cross-validation.</strong></p></li>
+</ul>
+<p>Package: <code>boot</code></p>
+<p>Sources:</p>
+<ul>
+<li><a href="https://stat.ethz.ch/R-manual/R-devel/library/boot/html/cv.glm.html" class="uri">https://stat.ethz.ch/R-manual/R-devel/library/boot/html/cv.glm.html</a></li>
+</ul>
 </div>
 </div>
 </article>
