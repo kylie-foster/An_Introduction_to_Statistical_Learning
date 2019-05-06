@@ -102,3 +102,80 @@ cv_err$delta
 
 ```
 
+In this case (LOOCV) both values of `delta` correspond to: 
+$CV_{(n)} = \frac{1}{n}\Sigma^n_{i=1} MSE_i$
+
+This is the LOOCV estimate for the test MSE, which is the average of test errors for each of the `n` model fits.
+
+```{r LOOCV_poly}
+cv_error <- rep (0,5) #initialising vector
+for (i in 1:5){
+glm_fit <- glm(mpg ∼ poly(horsepower, i), data = Auto) # iteratively fits polynomial 
+# regressions for polynomials of order i = 1 to i = 5
+cv_error[i] <- cv.glm(Auto, glm_fit)$delta[1] # computes the LOOCV cross-validation error,
+# and stores it in the ith element of the vector cv_error
+}
+cv_error
+```
+
+## 5.3.3 k-Fold Cross-Validation
+
+```{r k_fold}
+set.seed(17)
+cv_error_10 <- rep(0, 10) # initialising vector
+for (i in 1:10) {
+  glm_fit <- glm(mpg ∼ poly(horsepower, i), data = Auto)# iteratively fits polynomial 
+# regressions for polynomials of order i = 1 to i = 5
+  cv_error_10[i] <- cv.glm (Auto, glm_fit, K=10)$delta[1] # 10-fold cross-validation
+  }
+cv_error_10
+```
+
+When LOOCV is performed the two numbers associated with delta are
+essentially the same. When we instead perform k-fold CV, then the two numbers associated with delta differ slightly. The first is the standard k-fold CV estimate, $CV_{(k)} = \frac{1}{k}\Sigma^k_{i=1}MSE_i$. The second is a bias corrected
+version.
+
+## 5.3.4 The Bootstrap
+
+Performing a bootstrap analysis in `R` involves two steps:
+
+1. create a function that computes the statistic of interest.
+
+2. use the `boot()` function to perform the bootstrap by repeatedly sampling observations from the data
+set with replacement.
+
+#### Estimating the Accuracy of a Statistic of Interest
+
+```{r boot_function}
+
+alpha_fn <- function(data, index){# function takes as input the (X, Y) 
+  # data as well as a vector indicating which observations should be 
+  # used to estimate α
+  X <- data$X[index]
+  Y <- data$Y[index]
+  return((var(Y) - cov(X,Y))/(var(X) + var(Y) -2*cov(X,Y))) # alpha
+  }
+
+alpha_fn(Portfolio, 1:100) # estimates α using all 100 observations
+# the Portfolio data set is in the ISLR package
+
+set.seed (1)
+alpha_fn(Portfolio, sample(100, 100, replace = T))
+# using sample() to randomly select 100 observations from the range 
+# 1 to 100, with replacement and then recomputing alpha hat using 
+# the new bootstrap data set.
+
+boot(Portfolio, alpha_fn, R = 1000)
+
+```
+
+#### Estimating the Accuracy of a Linear Regression Model
+
+```{r}
+boot_fn <- function(data, index){
+  return(coef(lm(mpg ∼ horsepower, data = data, subset = index)))
+}
++ 
+boot_fn(Auto, 1:392)
+```
+

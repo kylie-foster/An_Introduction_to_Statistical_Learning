@@ -184,6 +184,83 @@ code > span.ot { color: #007020; }
 <a class="sourceLine" id="cb20-2" title="2">cv_err &lt;-<span class="st"> </span><span class="kw">cv.glm</span>(Auto, glm_fit)</a>
 <a class="sourceLine" id="cb20-3" title="3">cv_err<span class="op">$</span>delta</a></code></pre></div>
 <pre><code>## [1] 24.23151 24.23114</code></pre>
+<p>In this case (LOOCV) both values of <code>delta</code> correspond to: <span class="math inline">\(CV_{(n)} = \frac{1}{n}\Sigma^n_{i=1} MSE_i\)</span></p>
+<p>This is the LOOCV estimate for the test MSE, which is the average of test errors for each of the <code>n</code> model fits.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">cv_error &lt;-<span class="st"> </span><span class="kw">rep</span> (<span class="dv">0</span>,<span class="dv">5</span>) <span class="co">#initialising vector</span></a>
+<a class="sourceLine" id="cb22-2" title="2"><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>){</a>
+<a class="sourceLine" id="cb22-3" title="3">glm_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(mpg ∼ <span class="kw">poly</span>(horsepower, i), <span class="dt">data =</span> Auto) <span class="co"># iteratively fits polynomial </span></a>
+<a class="sourceLine" id="cb22-4" title="4"><span class="co"># regressions for polynomials of order i = 1 to i = 5</span></a>
+<a class="sourceLine" id="cb22-5" title="5">cv_error[i] &lt;-<span class="st"> </span><span class="kw">cv.glm</span>(Auto, glm_fit)<span class="op">$</span>delta[<span class="dv">1</span>] <span class="co"># computes the LOOCV cross-validation error,</span></a>
+<a class="sourceLine" id="cb22-6" title="6"><span class="co"># and stores it in the ith element of the vector cv_error</span></a>
+<a class="sourceLine" id="cb22-7" title="7">}</a>
+<a class="sourceLine" id="cb22-8" title="8">cv_error</a></code></pre></div>
+<pre><code>## [1] 24.23151 19.24821 19.33498 19.42443 19.03321</code></pre>
+</div>
+<div id="k-fold-cross-validation" class="section level2">
+<h2>5.3.3 k-Fold Cross-Validation</h2>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1"><span class="kw">set.seed</span>(<span class="dv">17</span>)</a>
+<a class="sourceLine" id="cb24-2" title="2">cv_error_<span class="dv">10</span> &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, <span class="dv">10</span>) <span class="co"># initialising vector</span></a>
+<a class="sourceLine" id="cb24-3" title="3"><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>) {</a>
+<a class="sourceLine" id="cb24-4" title="4">  glm_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(mpg ∼ <span class="kw">poly</span>(horsepower, i), <span class="dt">data =</span> Auto)<span class="co"># iteratively fits polynomial </span></a>
+<a class="sourceLine" id="cb24-5" title="5"><span class="co"># regressions for polynomials of order i = 1 to i = 5</span></a>
+<a class="sourceLine" id="cb24-6" title="6">  cv_error_<span class="dv">10</span>[i] &lt;-<span class="st"> </span><span class="kw">cv.glm</span> (Auto, glm_fit, <span class="dt">K=</span><span class="dv">10</span>)<span class="op">$</span>delta[<span class="dv">1</span>] <span class="co"># 10-fold cross-validation</span></a>
+<a class="sourceLine" id="cb24-7" title="7">  }</a>
+<a class="sourceLine" id="cb24-8" title="8">cv_error_<span class="dv">10</span></a></code></pre></div>
+<pre><code>##  [1] 24.20520 19.18924 19.30662 19.33799 18.87911 19.02103 18.89609
+##  [8] 19.71201 18.95140 19.50196</code></pre>
+<p>When LOOCV is performed the two numbers associated with delta are essentially the same. When we instead perform k-fold CV, then the two numbers associated with delta differ slightly. The first is the standard k-fold CV estimate, <span class="math inline">\(CV_{(k)} = \frac{1}{k}\Sigma^k_{i=1}MSE_i\)</span>. The second is a bias corrected version.</p>
+</div>
+<div id="the-bootstrap" class="section level2">
+<h2>5.3.4 The Bootstrap</h2>
+<p>Performing a bootstrap analysis in <code>R</code> involves two steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>create a function that computes the statistic of interest.</p></li>
+<li><p>use the <code>boot()</code> function to perform the bootstrap by repeatedly sampling observations from the data set with replacement.</p></li>
+</ol>
+<div id="estimating-the-accuracy-of-a-statistic-of-interest" class="section level4">
+<h4>Estimating the Accuracy of a Statistic of Interest</h4>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1">alpha_fn &lt;-<span class="st"> </span><span class="cf">function</span>(data, index){<span class="co"># function takes as input the (X, Y) </span></a>
+<a class="sourceLine" id="cb26-2" title="2">  <span class="co"># data as well as a vector indicating which observations should be </span></a>
+<a class="sourceLine" id="cb26-3" title="3">  <span class="co"># used to estimate α</span></a>
+<a class="sourceLine" id="cb26-4" title="4">  X &lt;-<span class="st"> </span>data<span class="op">$</span>X[index]</a>
+<a class="sourceLine" id="cb26-5" title="5">  Y &lt;-<span class="st"> </span>data<span class="op">$</span>Y[index]</a>
+<a class="sourceLine" id="cb26-6" title="6">  <span class="kw">return</span>((<span class="kw">var</span>(Y) <span class="op">-</span><span class="st"> </span><span class="kw">cov</span>(X,Y))<span class="op">/</span>(<span class="kw">var</span>(X) <span class="op">+</span><span class="st"> </span><span class="kw">var</span>(Y) <span class="dv">-2</span><span class="op">*</span><span class="kw">cov</span>(X,Y))) <span class="co"># alpha</span></a>
+<a class="sourceLine" id="cb26-7" title="7">  }</a>
+<a class="sourceLine" id="cb26-8" title="8"></a>
+<a class="sourceLine" id="cb26-9" title="9"><span class="kw">alpha_fn</span>(Portfolio, <span class="dv">1</span><span class="op">:</span><span class="dv">100</span>) <span class="co"># estimates α using all 100 observations</span></a></code></pre></div>
+<pre><code>## [1] 0.5758321</code></pre>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1"><span class="co"># the Portfolio data set is in the ISLR package</span></a>
+<a class="sourceLine" id="cb28-2" title="2"></a>
+<a class="sourceLine" id="cb28-3" title="3"><span class="kw">set.seed</span> (<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb28-4" title="4"><span class="kw">alpha_fn</span>(Portfolio, <span class="kw">sample</span>(<span class="dv">100</span>, <span class="dv">100</span>, <span class="dt">replace =</span> T))</a></code></pre></div>
+<pre><code>## [1] 0.5963833</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1"><span class="co"># using sample() to randomly select 100 observations from the range </span></a>
+<a class="sourceLine" id="cb30-2" title="2"><span class="co"># 1 to 100, with replacement and then recomputing alpha hat using </span></a>
+<a class="sourceLine" id="cb30-3" title="3"><span class="co"># the new bootstrap data set.</span></a>
+<a class="sourceLine" id="cb30-4" title="4"></a>
+<a class="sourceLine" id="cb30-5" title="5"><span class="kw">boot</span>(Portfolio, alpha_fn, <span class="dt">R =</span> <span class="dv">1000</span>)</a></code></pre></div>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = Portfolio, statistic = alpha_fn, R = 1000)
+## 
+## 
+## Bootstrap Statistics :
+##      original        bias    std. error
+## t1* 0.5758321 -7.315422e-05  0.08861826</code></pre>
+</div>
+<div id="estimating-the-accuracy-of-a-linear-regression-model" class="section level4">
+<h4>Estimating the Accuracy of a Linear Regression Model</h4>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1">boot_fn &lt;-<span class="st"> </span><span class="cf">function</span>(data, index){</a>
+<a class="sourceLine" id="cb32-2" title="2">  <span class="kw">return</span>(<span class="kw">coef</span>(<span class="kw">lm</span>(mpg ∼ horsepower, <span class="dt">data =</span> data, <span class="dt">subset =</span> index)))</a>
+<a class="sourceLine" id="cb32-3" title="3">}</a>
+<a class="sourceLine" id="cb32-4" title="4"><span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb32-5" title="5"><span class="kw">boot_fn</span>(Auto, <span class="dv">1</span><span class="op">:</span><span class="dv">392</span>)</a></code></pre></div>
+<pre><code>## (Intercept)  horsepower 
+##  39.9358610  -0.1578447</code></pre>
+</div>
 </div>
 </article>
 </div>
