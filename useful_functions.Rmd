@@ -310,3 +310,5 @@ Sources:
 `kable(data) %>%   kable_styling(bootstrap_options = "striped", full_width = F)`
 
 Source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
+
+- `quantile()`

@@ -1,7 +1,7 @@
 ---
 title: "An Introduction to Statistical Learning: Chapter 5 Applied Exercises"
 author: "Kylie Foster"
-date: "1 May 2019"
+date: "8 May 2019"
 output: 
   prettydoc::html_pretty:
     theme: leonids
@@ -12,20 +12,10 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(MASS) # for lda, and contains a large collection of datasets
-#library(GGally) # for ggpairs
 library(tidyverse) # loads packages including ggplot2, dplyr
-#library(skimr) # for nicer summaries using skim
-#library(cowplot) # for plot_grid
-#library(car) # for vif()
-#library(olsrr) # for studentized residual plots
-library(knitr) # for kable
-#library(ggplot2)
-library (class) # for knn()
 library(ISLR) # data sets for the ISLR book
-library(boot) # for cv.glm()
+library(boot) # for cv.glm() and boot()
 ```
-
-Still need to do Ex13
 
 ## Exercise 5
 
@@ -160,9 +150,26 @@ summary(log_multi) # using summary to determine the estimated standard errors fo
 
 #### (b) Write a function, `boot.fn()`, that takes as input the `Default` data set as well as an index of the observations, and that outputs the coefficient estimates for `income` and `balance` in the multiple logistic regression model.
 
+```{r 6b}
+
+boot_fn <- function(data, index){
+  coef(glm(default ~ income + balance, data = data, family = "binomial", subset = index))
+}
+
+```
+
+
 #### (c) Use the `boot()` function together with your `boot.fn()` function to estimate the standard errors of the logistic regression coefficients for `income` and `balance`.
 
+```{r 6c}
+set.seed(1)
+boot(Default, boot_fn, 1000) # calculating 1000 bootstrap estimates
+```
+
+
 #### (d) Comment on the estimated standard errors obtained using the `glm()` function and using your bootstrap function.
+
+The standard errors obtained using the two methods are very similar.
 
 ## Exercise 7
 
@@ -177,12 +184,32 @@ of classification problems, the LOOCV error is given in (5.4).
 
 ```{r 7a}
 # fitting multiple logistic regression model
-log_Wekly <- glm(Direction ~ Lag1 + Lag2, data = Weekly, family = "binomial")
+log_Weekly <- glm(Direction ~ Lag1 + Lag2, data = Weekly, family = "binomial")
 ```
 
 #### (b) Fit a logistic regression model that predicts `Direction` using `Lag1` and `Lag2` using all but the first observation.
 
+```{r 7b}
+
+index <- 2:dim(Weekly)[1]
+
+log_Weekly_minus1 <- glm(Direction ~ Lag1 + Lag2, data = Weekly, family = "binomial", subset = index)
+```
+
 #### (c) Use the model from (b) to predict the direction of the first observation. You can do this by predicting that the first observation will go up if P(Direction="Up"|Lag1, Lag2) > 0.5. Was this observation correctly classified?
+
+```{r 7c}
+# calculating probability of Up for first observation
+log_prob <- predict(log_Weekly_minus1, Weekly[1, ], type = "response")
+# classifying first observation as Up of Down
+log_pred <- as.factor(case_when(log_prob > 0.5 ~ "Up",
+                                log_prob <= 0.5 ~ "Down"))
+# checking if this observation was correctly classified
+case_when(log_pred == Weekly$Direction[1] ~ "Correctly classified",
+          log_pred != Weekly$Direction[1] ~ "Incorrectly classified")
+
+```
+
 
 #### (d) Write a for loop from i = 1 to i = n, where n is the number of observations in the data set, that performs each of the following steps:
 
@@ -194,7 +221,33 @@ log_Wekly <- glm(Direction ~ Lag1 + Lag2, data = Weekly, family = "binomial")
 
 #### iv. Determine whether or not an error was made in predicting the direction for the ith observation. If an error was made, then indicate this as a 1, and otherwise indicate it as a 0.
 
+```{r 7d}
+n <- dim(Weekly)[1] # number of observations in the data set
+err <- rep(0, n) # initialising vector
+for (i in 1:n) {
+  index <- (1:n)[-i] # removing row i from index
+  # fitting logistic model for all observations except i
+  log_fit <- glm(Direction ~ Lag1 + Lag2, data = Weekly, family = "binomial", subset = index)  
+  # finding the probability of Up for observation i
+  log_prob <-  predict(log_fit, Weekly[i, ], type = "response")
+  # converting the above probability to a direction
+  log_pred <- as.factor(case_when(log_prob > 0.5 ~ "Up",
+                                  log_prob < 0.5 ~ "Down"))
+  # determining if an error was made predicting the ith observation, and saving the results
+  err[i] <- case_when(log_pred == Weekly$Direction[i] ~ 0, # correct
+          log_pred != Weekly$Direction[i] ~ 1) # incorrect
+}
+
+```
+
 #### (e) Take the average of the n numbers obtained in (d)iv in order to obtain the LOOCV estimate for the test error. Comment on the results.
+
+```{r 7e}
+
+mean(err) # LOOCV estimate of the test error
+
+```
+The error rate is quite high (approx 45%).
 
 ## Exercise 8
 
@@ -203,59 +256,208 @@ We will now perform cross-validation on a simulated data set.
 #### (a) Generate a simulated data set as follows:
 
 `set.seed(1)`
+
 `x = rnorm(100)`
+
 `y = x - 2*x^2 + rnorm(100)`
 
 In this data set, what is n and what is p? Write out the model
 used to generate the data in equation form.
 
+```{r 8a}
+set.seed(1)
+x <- rnorm(100)
+y <- x - 2*x^2 + rnorm(100)
+
+```
+
+The number of observations is 100 (n = 100) and the number of predictors is 2, `x` and `x^2` (p = 2).
+
+$y = \beta_1x + \beta_2x^2 + \epsilon$, with $\beta_1 = 1$ and $\beta_2 = -2$.
+
 #### (b) Create a scatterplot of `X` against `Y`. Comment on what you find.
+
+```{r 8b}
+
+plot(x, y)
+
+```
+
+There is (unsurprisingly) a quadratic relationship between `x` and `y` with some noise present.
 
 #### (c) Set a random seed, and then compute the LOOCV errors that result from fitting the following four models using least squares:
 
 #### i. $Y = \beta_0 + \beta_1X + \epsilon$
 
-#### ii. $Y = \beta_0 + \beta_1X + beta_2X^2 + \epsilon$
+```{r 8ci}
+set.seed(1)
 
-#### iii. $Y = \beta_0 + \beta_1X + beta_2X^2 +\beta_3X^3 + \epsilon$
+data_xy <- data.frame(x, y) # combining x and y into a single dataframe
 
-#### iv. $Y = \beta_0 + \beta_1X + beta_2X^2 + \beta_3X^3 + \beta_4X^4 + \epsilon$.
+glm_fit <- glm(y ~ x, data = data_xy) # fitting eq for 8ci
+summary(glm_fit)
+
+cv.glm(data_xy, glm_fit)$delta[1] # LOOCV error
+```
+
+
+#### ii. $Y = \beta_0 + \beta_1X + \beta_2X^2 + \epsilon$
+
+```{r 8cii}
+
+glm_fit <- glm(y ~ x + I(x^2), data = data_xy) # fitting eq for 8cii
+summary(glm_fit)
+
+cv.glm(data_xy, glm_fit)$delta[1] # LOOCV error
+```
+
+
+#### iii. $Y = \beta_0 + \beta_1X + \beta_2X^2 +\beta_3X^3 + \epsilon$
+
+```{r 8ciii}
+
+glm_fit <- glm(y ~ x + I(x^2) + I(x^3), data = data_xy) # fitting eq for 8ciii
+summary(glm_fit)
+
+cv.glm(data_xy, glm_fit)$delta[1] # LOOCV error
+```
+
+
+#### iv. $Y = \beta_0 + \beta_1X + \beta_2X^2 + \beta_3X^3 + \beta_4X^4 + \epsilon$.
+
+```{r 8civ}
+
+glm_fit <- glm(y ~ x + I(x^2) + I(x^3) + I(x^4), data = data_xy) # fitting eq for 8civ
+summary(glm_fit)
+
+cv.glm(data_xy, glm_fit)$delta[1] # LOOCV error
+```
 
 Note you may find it helpful to use the data.frame() function
 to create a single data set containing both `X` and `Y`.
 
 #### (d) Repeat (c) using another random seed, and report your results. Are your results the same as what you got in (c)? Why?
 
+```{r 8d}
+set.seed(10)
+
+glm_fit <- glm(y ~ x, data = data_xy) # fitting eq for 8ci
+cv.glm(data_xy, glm_fit)$delta[1] # LOOCV error
+
+glm_fit <- glm(y ~ x + I(x^2), data = data_xy) # fitting eq for 8cii
+cv.glm(data_xy, glm_fit)$delta[1] # LOOCV error
+
+glm_fit <- glm(y ~ x + I(x^2) + I(x^3), data = data_xy) # fitting eq for 8ciii
+cv.glm(data_xy, glm_fit)$delta[1] # LOOCV error
+
+glm_fit <- glm(y ~ x + I(x^2) + I(x^3) + I(x^4), data = data_xy) # fitting eq for 8civ
+cv.glm(data_xy, glm_fit)$delta[1] # LOOCV error
+```
+
+The results of LOOCV are identical for different random seeds (unless the set.seed() used before calculating x and y are changed), this is because all observations are used to calculate the LOOCV error (there is no random sample of values used).
+
 #### (e) Which of the models in (c) had the smallest LOOCV error? Is this what you expected? Explain your answer.
 
-#### (f) Comment on the statistical significance of the coefficient estimates that results from fitting each of the models in (c) using
-least squares. Do these results agree with the conclusions drawn based on the cross-validation results?
+The model in **8(c)(ii)** ($Y = \beta_0 + \beta_1X + \beta_2X^2 + \epsilon$) has the smallest LOOCV error. This is as expected because the data was simulated using a quadratic function.
+
+#### (f) Comment on the statistical significance of the coefficient estimates that results from fitting each of the models in (c) using least squares. Do these results agree with the conclusions drawn based on the cross-validation results?
+
+In models (c)(ii) to (c)(iv) only the coefficients of `x` and `x^2` are statistically significant, the intercept term and coefficients of `x` terms with a power higher than 2 are not statistically significant. This is expected because the data was simulated using an equation with only `x` and `x^2` terms (with no intercept and no higher power terms).
 
 ## Exercise 9
 
-We will now consider the `Boston` housing data set, from the `MASS`
-library.
+We will now consider the `Boston` housing data set, from the `MASS` library.
 
 #### (a) Based on this data set, provide an estimate for the population mean of `medv`. Call this estimate $\hat{\mu}$.
 
-#### (b) Provide an estimate of the standard error of ˆμ. Interpret this result.
+```{r 9a}
+(mu_hat <- mean(Boston$medv)) # estimate for the population mean of medv
+```
+
+
+#### (b) Provide an estimate of the standard error of $\hat{\mu}$. Interpret this result.
+
 Hint: We can compute the standard error of the sample mean by
 dividing the sample standard deviation by the square root of the
 number of observations.
 
-#### (c) Now estimate the standard error of ˆμ using the bootstrap. How does this compare to your answer from (b)?
+```{r 9b}
+(mu_hat_SE <- sd(Boston$medv)/sqrt(length(Boston$medv)))
+```
 
-#### (d) Based on your bootstrap estimate from (c), provide a 95% confidence interval for the mean of `medv`. Compare it to the results
-obtained using `t.test(Boston$medv)`.
+Not sure how to interpret this result.
+
+#### (c) Now estimate the standard error of $\hat{\mu}$ using the bootstrap. How does this compare to your answer from (b)?
+
+```{r 9c}
+se_boot <- function(data, index){
+  mean(Boston$medv[index])
+}
+
+set.seed(1)
+(se_estimate <- boot(Boston, se_boot, 500))
+```
+
+The bootstrap standard error is very similar to the standard error from (b) (0.40 compared to 0.41).
+
+#### (d) Based on your bootstrap estimate from (c), provide a 95% confidence interval for the mean of `medv`. Compare it to the results obtained using `t.test(Boston$medv)`.
 Hint: You can approximate a 95% confidence interval using the
-formula [ˆμ − 2SE(ˆμ), ˆμ + 2SE(ˆμ)].
+formula [$\hat{\mu} − 2SE(\hat{\mu}), \hat{\mu} + 2SE(\hat{\mu})$].
 
-#### (e) Based on this data set, provide an estimate, ˆμmed, for the median value of `medv` in the population.
+```{r 9d}
+# recalculating se because it is not easy to get this value 
+# directly from the output of boot() 
+se <- sd(se_estimate$t)
+(low_CI <- mu_hat - 2*se) # lower boundary of 95% CI
+(up_CI <- mu_hat + 2*se) # upper boundary of 95% CI
 
-#### (f) We now would like to estimate the standard error of ˆμmed. Unfortunately, there is no simple formula for computing the standard
-error of the median. Instead, estimate the standard error of the median using the bootstrap. Comment on your findings.
+t.test(Boston$medv)
 
-#### (g) Based on this data set, provide an estimate for the tenth percentile of `medv` in Boston suburbs. Call this quantity ˆμ0.1. (You
-can use the `quantile()` function.)
+```
 
-#### (h) Use the bootstrap to estimate the standard error of ˆμ0.1. Comment on your findings.
+The results of the two methods are the same up to one decimal place.
+
+#### (e) Based on this data set, provide an estimate, $\hat{\mu}_{med}$, for the median value of `medv` in the population.
+
+```{r 9e}
+
+median(Boston$medv)
+
+```
+
+
+#### (f) We now would like to estimate the standard error of $\hat{\mu}_{med}$. Unfortunately, there is no simple formula for computing the standard error of the median. Instead, estimate the standard error of the median using the bootstrap. Comment on your findings.
+
+```{r 9f}
+
+med_boot <- function(data, index){
+  median(Boston$medv[index])
+}
+
+set.seed(1)
+boot(Boston, med_boot, 500)
+
+```
+
+The standard error of the median is 0.37
+
+#### (g) Based on this data set, provide an estimate for the tenth percentile of `medv` in Boston suburbs. Call this quantity $\hat{\mu}_{0.1}$ (You can use the `quantile()` function.)
+
+```{r 9g}
+quantile(Boston$medv, 0.1)
+```
+
+
+#### (h) Use the bootstrap to estimate the standard error of $\hat{\mu}_{0.1}$. Comment on your findings.
+
+```{r 9h}
+
+mu10_boot <- function(data, index){
+  quantile(Boston$medv[index], 0.1)
+}
+
+set.seed(1)
+boot(Boston, mu10_boot, 500)
+```
+
+The estimated standard error is 0.52.

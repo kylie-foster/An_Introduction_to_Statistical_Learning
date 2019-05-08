@@ -12,7 +12,7 @@
 
 <meta name="author" content="Kylie Foster" />
 
-<meta name="date" content="2019-05-01" />
+<meta name="date" content="2019-05-08" />
 
 <title>An Introduction to Statistical Learning: Chapter 5 Applied Exercises</title>
 
@@ -110,7 +110,7 @@ code > span.ot { color: #007020; }
 <div class="cover-card table-cell table-middle">
 <span class="author_name">An Introduction to Statistical Learning: Chapter 5 Applied Exercises</span>
 <span class="author_bio mbm">Kylie Foster</span>
-<span class="author_bio mbm">1 May 2019</span>
+<span class="author_bio mbm">8 May 2019</span>
 </div>
 </div>
 </div>
@@ -121,7 +121,6 @@ code > span.ot { color: #007020; }
 
 <div id="post">
 <article class="post-content">
-<p>Still need to do Ex13</p>
 <div id="exercise-5" class="section level2">
 <h2>Exercise 5</h2>
 <p>In Chapter 4, we used logistic regression to predict the probability of default using <code>income</code> and <code>balance</code> on the <code>Default</code> data set. We will now estimate the test error of this logistic regression model using the validation set approach. Do not forget to set a random seed before beginning your analysis.</p>
@@ -290,12 +289,31 @@ code > span.ot { color: #007020; }
 </div>
 <div id="b-write-a-function-boot.fn-that-takes-as-input-the-default-data-set-as-well-as-an-index-of-the-observations-and-that-outputs-the-coefficient-estimates-for-income-and-balance-in-the-multiple-logistic-regression-model." class="section level4">
 <h4>(b) Write a function, <code>boot.fn()</code>, that takes as input the <code>Default</code> data set as well as an index of the observations, and that outputs the coefficient estimates for <code>income</code> and <code>balance</code> in the multiple logistic regression model.</h4>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">boot_fn &lt;-<span class="st"> </span><span class="cf">function</span>(data, index){</a>
+<a class="sourceLine" id="cb18-2" title="2">  <span class="kw">coef</span>(<span class="kw">glm</span>(default <span class="op">~</span><span class="st"> </span>income <span class="op">+</span><span class="st"> </span>balance, <span class="dt">data =</span> data, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="dt">subset =</span> index))</a>
+<a class="sourceLine" id="cb18-3" title="3">}</a></code></pre></div>
 </div>
 <div id="c-use-the-boot-function-together-with-your-boot.fn-function-to-estimate-the-standard-errors-of-the-logistic-regression-coefficients-for-income-and-balance." class="section level4">
 <h4>(c) Use the <code>boot()</code> function together with your <code>boot.fn()</code> function to estimate the standard errors of the logistic regression coefficients for <code>income</code> and <code>balance</code>.</h4>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="kw">set.seed</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb19-2" title="2"><span class="kw">boot</span>(Default, boot_fn, <span class="dv">1000</span>) <span class="co"># calculating 1000 bootstrap estimates</span></a></code></pre></div>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = Default, statistic = boot_fn, R = 1000)
+## 
+## 
+## Bootstrap Statistics :
+##          original        bias     std. error
+## t1* -1.154047e+01 -8.008379e-03 4.239273e-01
+## t2*  2.080898e-05  5.870933e-08 4.582525e-06
+## t3*  5.647103e-03  2.299970e-06 2.267955e-04</code></pre>
 </div>
 <div id="d-comment-on-the-estimated-standard-errors-obtained-using-the-glm-function-and-using-your-bootstrap-function." class="section level4">
 <h4>(d) Comment on the estimated standard errors obtained using the <code>glm()</code> function and using your bootstrap function.</h4>
+<p>The standard errors obtained using the two methods are very similar.</p>
 </div>
 </div>
 <div id="exercise-7" class="section level2">
@@ -303,14 +321,26 @@ code > span.ot { color: #007020; }
 <p>In Sections 5.3.2 and 5.3.3, we saw that the <code>cv.glm()</code> function can be used in order to compute the LOOCV test error estimate. Alternatively, one could compute those quantities using just the <code>glm()</code> and <code>predict.glm()</code> functions, and a for loop. You will now take this approach in order to compute the LOOCV error for a simple logistic regression model on the <code>Weekly</code> data set. Recall that in the context of classification problems, the LOOCV error is given in (5.4).</p>
 <div id="a-fit-a-logistic-regression-model-that-predicts-direction-using-lag1-and-lag2." class="section level4">
 <h4>(a) Fit a logistic regression model that predicts <code>Direction</code> using <code>Lag1</code> and <code>Lag2</code>.</h4>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1"><span class="co"># fitting multiple logistic regression model</span></a>
-<a class="sourceLine" id="cb18-2" title="2">log_Wekly &lt;-<span class="st"> </span><span class="kw">glm</span>(Direction <span class="op">~</span><span class="st"> </span>Lag1 <span class="op">+</span><span class="st"> </span>Lag2, <span class="dt">data =</span> Weekly, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="co"># fitting multiple logistic regression model</span></a>
+<a class="sourceLine" id="cb21-2" title="2">log_Weekly &lt;-<span class="st"> </span><span class="kw">glm</span>(Direction <span class="op">~</span><span class="st"> </span>Lag1 <span class="op">+</span><span class="st"> </span>Lag2, <span class="dt">data =</span> Weekly, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>)</a></code></pre></div>
 </div>
 <div id="b-fit-a-logistic-regression-model-that-predicts-direction-using-lag1-and-lag2-using-all-but-the-first-observation." class="section level4">
 <h4>(b) Fit a logistic regression model that predicts <code>Direction</code> using <code>Lag1</code> and <code>Lag2</code> using all but the first observation.</h4>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">index &lt;-<span class="st"> </span><span class="dv">2</span><span class="op">:</span><span class="kw">dim</span>(Weekly)[<span class="dv">1</span>]</a>
+<a class="sourceLine" id="cb22-2" title="2"></a>
+<a class="sourceLine" id="cb22-3" title="3">log_Weekly_minus1 &lt;-<span class="st"> </span><span class="kw">glm</span>(Direction <span class="op">~</span><span class="st"> </span>Lag1 <span class="op">+</span><span class="st"> </span>Lag2, <span class="dt">data =</span> Weekly, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="dt">subset =</span> index)</a></code></pre></div>
 </div>
 <div id="c-use-the-model-from-b-to-predict-the-direction-of-the-first-observation.-you-can-do-this-by-predicting-that-the-first-observation-will-go-up-if-pdirectionuplag1-lag2-0.5.-was-this-observation-correctly-classified" class="section level4">
 <h4>(c) Use the model from (b) to predict the direction of the first observation. You can do this by predicting that the first observation will go up if P(Direction=“Up”|Lag1, Lag2) &gt; 0.5. Was this observation correctly classified?</h4>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="co"># calculating probability of Up for first observation</span></a>
+<a class="sourceLine" id="cb23-2" title="2">log_prob &lt;-<span class="st"> </span><span class="kw">predict</span>(log_Weekly_minus1, Weekly[<span class="dv">1</span>, ], <span class="dt">type =</span> <span class="st">&quot;response&quot;</span>)</a>
+<a class="sourceLine" id="cb23-3" title="3"><span class="co"># classifying first observation as Up of Down</span></a>
+<a class="sourceLine" id="cb23-4" title="4">log_pred &lt;-<span class="st"> </span><span class="kw">as.factor</span>(<span class="kw">case_when</span>(log_prob <span class="op">&gt;</span><span class="st"> </span><span class="fl">0.5</span> <span class="op">~</span><span class="st"> &quot;Up&quot;</span>,</a>
+<a class="sourceLine" id="cb23-5" title="5">                                log_prob <span class="op">&lt;=</span><span class="st"> </span><span class="fl">0.5</span> <span class="op">~</span><span class="st"> &quot;Down&quot;</span>))</a>
+<a class="sourceLine" id="cb23-6" title="6"><span class="co"># checking if this observation was correctly classified</span></a>
+<a class="sourceLine" id="cb23-7" title="7"><span class="kw">case_when</span>(log_pred <span class="op">==</span><span class="st"> </span>Weekly<span class="op">$</span>Direction[<span class="dv">1</span>] <span class="op">~</span><span class="st"> &quot;Correctly classified&quot;</span>,</a>
+<a class="sourceLine" id="cb23-8" title="8">          log_pred <span class="op">!=</span><span class="st"> </span>Weekly<span class="op">$</span>Direction[<span class="dv">1</span>] <span class="op">~</span><span class="st"> &quot;Incorrectly classified&quot;</span>)</a></code></pre></div>
+<pre><code>## [1] &quot;Incorrectly classified&quot;</code></pre>
 </div>
 <div id="d-write-a-for-loop-from-i-1-to-i-n-where-n-is-the-number-of-observations-in-the-data-set-that-performs-each-of-the-following-steps" class="section level4">
 <h4>(d) Write a for loop from i = 1 to i = n, where n is the number of observations in the data set, that performs each of the following steps:</h4>
@@ -326,9 +356,27 @@ code > span.ot { color: #007020; }
 </div>
 <div id="iv.-determine-whether-or-not-an-error-was-made-in-predicting-the-direction-for-the-ith-observation.-if-an-error-was-made-then-indicate-this-as-a-1-and-otherwise-indicate-it-as-a-0." class="section level4">
 <h4>iv. Determine whether or not an error was made in predicting the direction for the ith observation. If an error was made, then indicate this as a 1, and otherwise indicate it as a 0.</h4>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1">n &lt;-<span class="st"> </span><span class="kw">dim</span>(Weekly)[<span class="dv">1</span>] <span class="co"># number of observations in the data set</span></a>
+<a class="sourceLine" id="cb25-2" title="2">err &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">0</span>, n) <span class="co"># initialising vector</span></a>
+<a class="sourceLine" id="cb25-3" title="3"><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>n) {</a>
+<a class="sourceLine" id="cb25-4" title="4">  index &lt;-<span class="st"> </span>(<span class="dv">1</span><span class="op">:</span>n)[<span class="op">-</span>i] <span class="co"># removing row i from index</span></a>
+<a class="sourceLine" id="cb25-5" title="5">  <span class="co"># fitting logistic model for all observations except i</span></a>
+<a class="sourceLine" id="cb25-6" title="6">  log_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(Direction <span class="op">~</span><span class="st"> </span>Lag1 <span class="op">+</span><span class="st"> </span>Lag2, <span class="dt">data =</span> Weekly, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="dt">subset =</span> index)  </a>
+<a class="sourceLine" id="cb25-7" title="7">  <span class="co"># finding the probability of Up for observation i</span></a>
+<a class="sourceLine" id="cb25-8" title="8">  log_prob &lt;-<span class="st">  </span><span class="kw">predict</span>(log_fit, Weekly[i, ], <span class="dt">type =</span> <span class="st">&quot;response&quot;</span>)</a>
+<a class="sourceLine" id="cb25-9" title="9">  <span class="co"># converting the above probability to a direction</span></a>
+<a class="sourceLine" id="cb25-10" title="10">  log_pred &lt;-<span class="st"> </span><span class="kw">as.factor</span>(<span class="kw">case_when</span>(log_prob <span class="op">&gt;</span><span class="st"> </span><span class="fl">0.5</span> <span class="op">~</span><span class="st"> &quot;Up&quot;</span>,</a>
+<a class="sourceLine" id="cb25-11" title="11">                                  log_prob <span class="op">&lt;</span><span class="st"> </span><span class="fl">0.5</span> <span class="op">~</span><span class="st"> &quot;Down&quot;</span>))</a>
+<a class="sourceLine" id="cb25-12" title="12">  <span class="co"># determining if an error was made predicting the ith observation, and saving the results</span></a>
+<a class="sourceLine" id="cb25-13" title="13">  err[i] &lt;-<span class="st"> </span><span class="kw">case_when</span>(log_pred <span class="op">==</span><span class="st"> </span>Weekly<span class="op">$</span>Direction[i] <span class="op">~</span><span class="st"> </span><span class="dv">0</span>, <span class="co"># correct</span></a>
+<a class="sourceLine" id="cb25-14" title="14">          log_pred <span class="op">!=</span><span class="st"> </span>Weekly<span class="op">$</span>Direction[i] <span class="op">~</span><span class="st"> </span><span class="dv">1</span>) <span class="co"># incorrect</span></a>
+<a class="sourceLine" id="cb25-15" title="15">}</a></code></pre></div>
 </div>
 <div id="e-take-the-average-of-the-n-numbers-obtained-in-div-in-order-to-obtain-the-loocv-estimate-for-the-test-error.-comment-on-the-results." class="section level4">
 <h4>(e) Take the average of the n numbers obtained in (d)iv in order to obtain the LOOCV estimate for the test error. Comment on the results.</h4>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1"><span class="kw">mean</span>(err) <span class="co"># LOOCV estimate of the test error</span></a></code></pre></div>
+<pre><code>## [1] 0.4499541</code></pre>
+<p>The error rate is quite high (approx 45%).</p>
 </div>
 </div>
 <div id="exercise-8" class="section level2">
@@ -336,37 +384,177 @@ code > span.ot { color: #007020; }
 <p>We will now perform cross-validation on a simulated data set.</p>
 <div id="a-generate-a-simulated-data-set-as-follows" class="section level4">
 <h4>(a) Generate a simulated data set as follows:</h4>
-<p><code>set.seed(1)</code> <code>x = rnorm(100)</code> <code>y = x - 2*x^2 + rnorm(100)</code></p>
+<p><code>set.seed(1)</code></p>
+<p><code>x = rnorm(100)</code></p>
+<p><code>y = x - 2*x^2 + rnorm(100)</code></p>
 <p>In this data set, what is n and what is p? Write out the model used to generate the data in equation form.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1"><span class="kw">set.seed</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb28-2" title="2">x &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>)</a>
+<a class="sourceLine" id="cb28-3" title="3">y &lt;-<span class="st"> </span>x <span class="op">-</span><span class="st"> </span><span class="dv">2</span><span class="op">*</span>x<span class="op">^</span><span class="dv">2</span> <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>)</a></code></pre></div>
+<p>The number of observations is 100 (n = 100) and the number of predictors is 2, <code>x</code> and <code>x^2</code> (p = 2).</p>
+<p><span class="math inline">\(y = \beta_1x + \beta_2x^2 + \epsilon\)</span>, with <span class="math inline">\(\beta_1 = 1\)</span> and <span class="math inline">\(\beta_2 = -2\)</span>.</p>
 </div>
 <div id="b-create-a-scatterplot-of-x-against-y.-comment-on-what-you-find." class="section level4">
 <h4>(b) Create a scatterplot of <code>X</code> against <code>Y</code>. Comment on what you find.</h4>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1"><span class="kw">plot</span>(x, y)</a></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>There is (unsurprisingly) a quadratic relationship between <code>x</code> and <code>y</code> with some noise present.</p>
 </div>
 <div id="c-set-a-random-seed-and-then-compute-the-loocv-errors-that-result-from-fitting-the-following-four-models-using-least-squares" class="section level4">
 <h4>(c) Set a random seed, and then compute the LOOCV errors that result from fitting the following four models using least squares:</h4>
 </div>
 <div id="i.-y-beta_0-beta_1x-epsilon" class="section level4">
 <h4>i. <span class="math inline">\(Y = \beta_0 + \beta_1X + \epsilon\)</span></h4>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1"><span class="kw">set.seed</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb30-2" title="2"></a>
+<a class="sourceLine" id="cb30-3" title="3">data_xy &lt;-<span class="st"> </span><span class="kw">data.frame</span>(x, y) <span class="co"># combining x and y into a single dataframe</span></a>
+<a class="sourceLine" id="cb30-4" title="4"></a>
+<a class="sourceLine" id="cb30-5" title="5">glm_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(y <span class="op">~</span><span class="st"> </span>x, <span class="dt">data =</span> data_xy) <span class="co"># fitting eq for 8ci</span></a>
+<a class="sourceLine" id="cb30-6" title="6"><span class="kw">summary</span>(glm_fit)</a></code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = y ~ x, data = data_xy)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -9.5161  -0.6800   0.6812   1.5491   3.8183  
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  -1.6254     0.2619  -6.205 1.31e-08 ***
+## x             0.6925     0.2909   2.380   0.0192 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 6.760719)
+## 
+##     Null deviance: 700.85  on 99  degrees of freedom
+## Residual deviance: 662.55  on 98  degrees of freedom
+## AIC: 478.88
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1"><span class="kw">cv.glm</span>(data_xy, glm_fit)<span class="op">$</span>delta[<span class="dv">1</span>] <span class="co"># LOOCV error</span></a></code></pre></div>
+<pre><code>## [1] 7.288162</code></pre>
 </div>
 <div id="ii.-y-beta_0-beta_1x-beta_2x2-epsilon" class="section level4">
-<h4>ii. <span class="math inline">\(Y = \beta_0 + \beta_1X + beta_2X^2 + \epsilon\)</span></h4>
+<h4>ii. <span class="math inline">\(Y = \beta_0 + \beta_1X + \beta_2X^2 + \epsilon\)</span></h4>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1">glm_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(y <span class="op">~</span><span class="st"> </span>x <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">2</span>), <span class="dt">data =</span> data_xy) <span class="co"># fitting eq for 8cii</span></a>
+<a class="sourceLine" id="cb34-2" title="2"><span class="kw">summary</span>(glm_fit)</a></code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = y ~ x + I(x^2), data = data_xy)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.9650  -0.6254  -0.1288   0.5803   2.2700  
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.05672    0.11766   0.482    0.631    
+## x            1.01716    0.10798   9.420  2.4e-15 ***
+## I(x^2)      -2.11892    0.08477 -24.997  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.9178258)
+## 
+##     Null deviance: 700.852  on 99  degrees of freedom
+## Residual deviance:  89.029  on 97  degrees of freedom
+## AIC: 280.17
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" title="1"><span class="kw">cv.glm</span>(data_xy, glm_fit)<span class="op">$</span>delta[<span class="dv">1</span>] <span class="co"># LOOCV error</span></a></code></pre></div>
+<pre><code>## [1] 0.9374236</code></pre>
 </div>
 <div id="iii.-y-beta_0-beta_1x-beta_2x2-beta_3x3-epsilon" class="section level4">
-<h4>iii. <span class="math inline">\(Y = \beta_0 + \beta_1X + beta_2X^2 +\beta_3X^3 + \epsilon\)</span></h4>
+<h4>iii. <span class="math inline">\(Y = \beta_0 + \beta_1X + \beta_2X^2 +\beta_3X^3 + \epsilon\)</span></h4>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1">glm_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(y <span class="op">~</span><span class="st"> </span>x <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">3</span>), <span class="dt">data =</span> data_xy) <span class="co"># fitting eq for 8ciii</span></a>
+<a class="sourceLine" id="cb38-2" title="2"><span class="kw">summary</span>(glm_fit)</a></code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = y ~ x + I(x^2) + I(x^3), data = data_xy)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.9765  -0.6302  -0.1227   0.5545   2.2843  
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.06151    0.11950   0.515    0.608    
+## x            0.97528    0.18728   5.208 1.09e-06 ***
+## I(x^2)      -2.12379    0.08700 -24.411  &lt; 2e-16 ***
+## I(x^3)       0.01764    0.06429   0.274    0.784    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.9266599)
+## 
+##     Null deviance: 700.852  on 99  degrees of freedom
+## Residual deviance:  88.959  on 96  degrees of freedom
+## AIC: 282.09
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1"><span class="kw">cv.glm</span>(data_xy, glm_fit)<span class="op">$</span>delta[<span class="dv">1</span>] <span class="co"># LOOCV error</span></a></code></pre></div>
+<pre><code>## [1] 0.9566218</code></pre>
 </div>
 <div id="iv.-y-beta_0-beta_1x-beta_2x2-beta_3x3-beta_4x4-epsilon." class="section level4">
-<h4>iv. <span class="math inline">\(Y = \beta_0 + \beta_1X + beta_2X^2 + \beta_3X^3 + \beta_4X^4 + \epsilon\)</span>.</h4>
+<h4>iv. <span class="math inline">\(Y = \beta_0 + \beta_1X + \beta_2X^2 + \beta_3X^3 + \beta_4X^4 + \epsilon\)</span>.</h4>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" title="1">glm_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(y <span class="op">~</span><span class="st"> </span>x <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">3</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">4</span>), <span class="dt">data =</span> data_xy) <span class="co"># fitting eq for 8civ</span></a>
+<a class="sourceLine" id="cb42-2" title="2"><span class="kw">summary</span>(glm_fit)</a></code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = y ~ x + I(x^2) + I(x^3) + I(x^4), data = data_xy)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.0550  -0.6212  -0.1567   0.5952   2.2267  
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.156703   0.139462   1.124    0.264    
+## x            1.030826   0.191337   5.387 5.17e-07 ***
+## I(x^2)      -2.409898   0.234855 -10.261  &lt; 2e-16 ***
+## I(x^3)      -0.009133   0.067229  -0.136    0.892    
+## I(x^4)       0.069785   0.053240   1.311    0.193    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.9197797)
+## 
+##     Null deviance: 700.852  on 99  degrees of freedom
+## Residual deviance:  87.379  on 95  degrees of freedom
+## AIC: 282.3
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb44-1" title="1"><span class="kw">cv.glm</span>(data_xy, glm_fit)<span class="op">$</span>delta[<span class="dv">1</span>] <span class="co"># LOOCV error</span></a></code></pre></div>
+<pre><code>## [1] 0.9539049</code></pre>
 <p>Note you may find it helpful to use the data.frame() function to create a single data set containing both <code>X</code> and <code>Y</code>.</p>
 </div>
 <div id="d-repeat-c-using-another-random-seed-and-report-your-results.-are-your-results-the-same-as-what-you-got-in-c-why" class="section level4">
 <h4>(d) Repeat (c) using another random seed, and report your results. Are your results the same as what you got in (c)? Why?</h4>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb46-1" title="1"><span class="kw">set.seed</span>(<span class="dv">10</span>)</a>
+<a class="sourceLine" id="cb46-2" title="2"></a>
+<a class="sourceLine" id="cb46-3" title="3">glm_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(y <span class="op">~</span><span class="st"> </span>x, <span class="dt">data =</span> data_xy) <span class="co"># fitting eq for 8ci</span></a>
+<a class="sourceLine" id="cb46-4" title="4"><span class="kw">cv.glm</span>(data_xy, glm_fit)<span class="op">$</span>delta[<span class="dv">1</span>] <span class="co"># LOOCV error</span></a></code></pre></div>
+<pre><code>## [1] 7.288162</code></pre>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb48-1" title="1">glm_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(y <span class="op">~</span><span class="st"> </span>x <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">2</span>), <span class="dt">data =</span> data_xy) <span class="co"># fitting eq for 8cii</span></a>
+<a class="sourceLine" id="cb48-2" title="2"><span class="kw">cv.glm</span>(data_xy, glm_fit)<span class="op">$</span>delta[<span class="dv">1</span>] <span class="co"># LOOCV error</span></a></code></pre></div>
+<pre><code>## [1] 0.9374236</code></pre>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb50-1" title="1">glm_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(y <span class="op">~</span><span class="st"> </span>x <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">3</span>), <span class="dt">data =</span> data_xy) <span class="co"># fitting eq for 8ciii</span></a>
+<a class="sourceLine" id="cb50-2" title="2"><span class="kw">cv.glm</span>(data_xy, glm_fit)<span class="op">$</span>delta[<span class="dv">1</span>] <span class="co"># LOOCV error</span></a></code></pre></div>
+<pre><code>## [1] 0.9566218</code></pre>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb52-1" title="1">glm_fit &lt;-<span class="st"> </span><span class="kw">glm</span>(y <span class="op">~</span><span class="st"> </span>x <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">3</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(x<span class="op">^</span><span class="dv">4</span>), <span class="dt">data =</span> data_xy) <span class="co"># fitting eq for 8civ</span></a>
+<a class="sourceLine" id="cb52-2" title="2"><span class="kw">cv.glm</span>(data_xy, glm_fit)<span class="op">$</span>delta[<span class="dv">1</span>] <span class="co"># LOOCV error</span></a></code></pre></div>
+<pre><code>## [1] 0.9539049</code></pre>
+<p>The results of LOOCV are identical for different random seeds (unless the set.seed() used before calculating x and y are changed), this is because all observations are used to calculate the LOOCV error (there is no random sample of values used).</p>
 </div>
 <div id="e-which-of-the-models-in-c-had-the-smallest-loocv-error-is-this-what-you-expected-explain-your-answer." class="section level4">
 <h4>(e) Which of the models in (c) had the smallest LOOCV error? Is this what you expected? Explain your answer.</h4>
+<p>The model in <strong>8(c)(ii)</strong> (<span class="math inline">\(Y = \beta_0 + \beta_1X + \beta_2X^2 + \epsilon\)</span>) has the smallest LOOCV error. This is as expected because the data was simulated using a quadratic function.</p>
 </div>
-<div id="f-comment-on-the-statistical-significance-of-the-coefficient-estimates-that-results-from-fitting-each-of-the-models-in-c-using" class="section level4">
-<h4>(f) Comment on the statistical significance of the coefficient estimates that results from fitting each of the models in (c) using</h4>
-<p>least squares. Do these results agree with the conclusions drawn based on the cross-validation results?</p>
+<div id="f-comment-on-the-statistical-significance-of-the-coefficient-estimates-that-results-from-fitting-each-of-the-models-in-c-using-least-squares.-do-these-results-agree-with-the-conclusions-drawn-based-on-the-cross-validation-results" class="section level4">
+<h4>(f) Comment on the statistical significance of the coefficient estimates that results from fitting each of the models in (c) using least squares. Do these results agree with the conclusions drawn based on the cross-validation results?</h4>
+<p>In models (c)(ii) to (c)(iv) only the coefficients of <code>x</code> and <code>x^2</code> are statistically significant, the intercept term and coefficients of <code>x</code> terms with a power higher than 2 are not statistically significant. This is expected because the data was simulated using an equation with only <code>x</code> and <code>x^2</code> terms (with no intercept and no higher power terms).</p>
 </div>
 </div>
 <div id="exercise-9" class="section level2">
@@ -374,31 +562,113 @@ code > span.ot { color: #007020; }
 <p>We will now consider the <code>Boston</code> housing data set, from the <code>MASS</code> library.</p>
 <div id="a-based-on-this-data-set-provide-an-estimate-for-the-population-mean-of-medv.-call-this-estimate-hatmu." class="section level4">
 <h4>(a) Based on this data set, provide an estimate for the population mean of <code>medv</code>. Call this estimate <span class="math inline">\(\hat{\mu}\)</span>.</h4>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb54-1" title="1">(mu_hat &lt;-<span class="st"> </span><span class="kw">mean</span>(Boston<span class="op">$</span>medv)) <span class="co"># estimate for the population mean of medv</span></a></code></pre></div>
+<pre><code>## [1] 22.53281</code></pre>
 </div>
-<div id="b-provide-an-estimate-of-the-standard-error-of-.-interpret-this-result." class="section level4">
-<h4>(b) Provide an estimate of the standard error of ˆμ. Interpret this result.</h4>
+<div id="b-provide-an-estimate-of-the-standard-error-of-hatmu.-interpret-this-result." class="section level4">
+<h4>(b) Provide an estimate of the standard error of <span class="math inline">\(\hat{\mu}\)</span>. Interpret this result.</h4>
 <p>Hint: We can compute the standard error of the sample mean by dividing the sample standard deviation by the square root of the number of observations.</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb56-1" title="1">(mu_hat_SE &lt;-<span class="st"> </span><span class="kw">sd</span>(Boston<span class="op">$</span>medv)<span class="op">/</span><span class="kw">sqrt</span>(<span class="kw">length</span>(Boston<span class="op">$</span>medv)))</a></code></pre></div>
+<pre><code>## [1] 0.4088611</code></pre>
+<p>Not sure how to interpret this result.</p>
 </div>
-<div id="c-now-estimate-the-standard-error-of--using-the-bootstrap.-how-does-this-compare-to-your-answer-from-b" class="section level4">
-<h4>(c) Now estimate the standard error of ˆμ using the bootstrap. How does this compare to your answer from (b)?</h4>
+<div id="c-now-estimate-the-standard-error-of-hatmu-using-the-bootstrap.-how-does-this-compare-to-your-answer-from-b" class="section level4">
+<h4>(c) Now estimate the standard error of <span class="math inline">\(\hat{\mu}\)</span> using the bootstrap. How does this compare to your answer from (b)?</h4>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb58-1" title="1">se_boot &lt;-<span class="st"> </span><span class="cf">function</span>(data, index){</a>
+<a class="sourceLine" id="cb58-2" title="2">  <span class="kw">mean</span>(Boston<span class="op">$</span>medv[index])</a>
+<a class="sourceLine" id="cb58-3" title="3">}</a>
+<a class="sourceLine" id="cb58-4" title="4"></a>
+<a class="sourceLine" id="cb58-5" title="5"><span class="kw">set.seed</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb58-6" title="6">(se_estimate &lt;-<span class="st"> </span><span class="kw">boot</span>(Boston, se_boot, <span class="dv">500</span>))</a></code></pre></div>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = Boston, statistic = se_boot, R = 500)
+## 
+## 
+## Bootstrap Statistics :
+##     original     bias    std. error
+## t1* 22.53281 -0.0117834   0.3967535</code></pre>
+<p>The bootstrap standard error is very similar to the standard error from (b) (0.40 compared to 0.41).</p>
 </div>
-<div id="d-based-on-your-bootstrap-estimate-from-c-provide-a-95-confidence-interval-for-the-mean-of-medv.-compare-it-to-the-results" class="section level4">
-<h4>(d) Based on your bootstrap estimate from (c), provide a 95% confidence interval for the mean of <code>medv</code>. Compare it to the results</h4>
-<p>obtained using <code>t.test(Boston$medv)</code>. Hint: You can approximate a 95% confidence interval using the formula [ˆμ − 2SE(ˆμ), ˆμ + 2SE(ˆμ)].</p>
+<div id="d-based-on-your-bootstrap-estimate-from-c-provide-a-95-confidence-interval-for-the-mean-of-medv.-compare-it-to-the-results-obtained-using-t.testbostonmedv." class="section level4">
+<h4>(d) Based on your bootstrap estimate from (c), provide a 95% confidence interval for the mean of <code>medv</code>. Compare it to the results obtained using <code>t.test(Boston$medv)</code>.</h4>
+<p>Hint: You can approximate a 95% confidence interval using the formula [<span class="math inline">\(\hat{\mu} − 2SE(\hat{\mu}), \hat{\mu} + 2SE(\hat{\mu})\)</span>].</p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb60-1" title="1"><span class="co"># recalculating se because it is not easy to get this value </span></a>
+<a class="sourceLine" id="cb60-2" title="2"><span class="co"># directly from the output of boot() </span></a>
+<a class="sourceLine" id="cb60-3" title="3">se &lt;-<span class="st"> </span><span class="kw">sd</span>(se_estimate<span class="op">$</span>t)</a>
+<a class="sourceLine" id="cb60-4" title="4">(low_CI &lt;-<span class="st"> </span>mu_hat <span class="op">-</span><span class="st"> </span><span class="dv">2</span><span class="op">*</span>se) <span class="co"># lower boundary of 95% CI</span></a></code></pre></div>
+<pre><code>## [1] 21.7393</code></pre>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb62-1" title="1">(up_CI &lt;-<span class="st"> </span>mu_hat <span class="op">+</span><span class="st"> </span><span class="dv">2</span><span class="op">*</span>se) <span class="co"># upper boundary of 95% CI</span></a></code></pre></div>
+<pre><code>## [1] 23.32631</code></pre>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb64-1" title="1"><span class="kw">t.test</span>(Boston<span class="op">$</span>medv)</a></code></pre></div>
+<pre><code>## 
+##  One Sample t-test
+## 
+## data:  Boston$medv
+## t = 55.111, df = 505, p-value &lt; 2.2e-16
+## alternative hypothesis: true mean is not equal to 0
+## 95 percent confidence interval:
+##  21.72953 23.33608
+## sample estimates:
+## mean of x 
+##  22.53281</code></pre>
+<p>The results of the two methods are the same up to one decimal place.</p>
 </div>
-<div id="e-based-on-this-data-set-provide-an-estimate-med-for-the-median-value-of-medv-in-the-population." class="section level4">
-<h4>(e) Based on this data set, provide an estimate, ˆμmed, for the median value of <code>medv</code> in the population.</h4>
+<div id="e-based-on-this-data-set-provide-an-estimate-hatmu_med-for-the-median-value-of-medv-in-the-population." class="section level4">
+<h4>(e) Based on this data set, provide an estimate, <span class="math inline">\(\hat{\mu}_{med}\)</span>, for the median value of <code>medv</code> in the population.</h4>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb66-1" title="1"><span class="kw">median</span>(Boston<span class="op">$</span>medv)</a></code></pre></div>
+<pre><code>## [1] 21.2</code></pre>
 </div>
-<div id="f-we-now-would-like-to-estimate-the-standard-error-of-med.-unfortunately-there-is-no-simple-formula-for-computing-the-standard" class="section level4">
-<h4>(f) We now would like to estimate the standard error of ˆμmed. Unfortunately, there is no simple formula for computing the standard</h4>
-<p>error of the median. Instead, estimate the standard error of the median using the bootstrap. Comment on your findings.</p>
+<div id="f-we-now-would-like-to-estimate-the-standard-error-of-hatmu_med.-unfortunately-there-is-no-simple-formula-for-computing-the-standard-error-of-the-median.-instead-estimate-the-standard-error-of-the-median-using-the-bootstrap.-comment-on-your-findings." class="section level4">
+<h4>(f) We now would like to estimate the standard error of <span class="math inline">\(\hat{\mu}_{med}\)</span>. Unfortunately, there is no simple formula for computing the standard error of the median. Instead, estimate the standard error of the median using the bootstrap. Comment on your findings.</h4>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb68-1" title="1">med_boot &lt;-<span class="st"> </span><span class="cf">function</span>(data, index){</a>
+<a class="sourceLine" id="cb68-2" title="2">  <span class="kw">median</span>(Boston<span class="op">$</span>medv[index])</a>
+<a class="sourceLine" id="cb68-3" title="3">}</a>
+<a class="sourceLine" id="cb68-4" title="4"></a>
+<a class="sourceLine" id="cb68-5" title="5"><span class="kw">set.seed</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb68-6" title="6"><span class="kw">boot</span>(Boston, med_boot, <span class="dv">500</span>)</a></code></pre></div>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = Boston, statistic = med_boot, R = 500)
+## 
+## 
+## Bootstrap Statistics :
+##     original  bias    std. error
+## t1*     21.2 -0.0312   0.3693635</code></pre>
+<p>The standard error of the median is 0.37</p>
 </div>
-<div id="g-based-on-this-data-set-provide-an-estimate-for-the-tenth-percentile-of-medv-in-boston-suburbs.-call-this-quantity-0.1.-you" class="section level4">
-<h4>(g) Based on this data set, provide an estimate for the tenth percentile of <code>medv</code> in Boston suburbs. Call this quantity ˆμ0.1. (You</h4>
-<p>can use the <code>quantile()</code> function.)</p>
+<div id="g-based-on-this-data-set-provide-an-estimate-for-the-tenth-percentile-of-medv-in-boston-suburbs.-call-this-quantity-hatmu_0.1-you-can-use-the-quantile-function." class="section level4">
+<h4>(g) Based on this data set, provide an estimate for the tenth percentile of <code>medv</code> in Boston suburbs. Call this quantity <span class="math inline">\(\hat{\mu}_{0.1}\)</span> (You can use the <code>quantile()</code> function.)</h4>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb70-1" title="1"><span class="kw">quantile</span>(Boston<span class="op">$</span>medv, <span class="fl">0.1</span>)</a></code></pre></div>
+<pre><code>##   10% 
+## 12.75</code></pre>
 </div>
-<div id="h-use-the-bootstrap-to-estimate-the-standard-error-of-0.1.-comment-on-your-findings." class="section level4">
-<h4>(h) Use the bootstrap to estimate the standard error of ˆμ0.1. Comment on your findings.</h4>
+<div id="h-use-the-bootstrap-to-estimate-the-standard-error-of-hatmu_0.1.-comment-on-your-findings." class="section level4">
+<h4>(h) Use the bootstrap to estimate the standard error of <span class="math inline">\(\hat{\mu}_{0.1}\)</span>. Comment on your findings.</h4>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb72-1" title="1">mu10_boot &lt;-<span class="st"> </span><span class="cf">function</span>(data, index){</a>
+<a class="sourceLine" id="cb72-2" title="2">  <span class="kw">quantile</span>(Boston<span class="op">$</span>medv[index], <span class="fl">0.1</span>)</a>
+<a class="sourceLine" id="cb72-3" title="3">}</a>
+<a class="sourceLine" id="cb72-4" title="4"></a>
+<a class="sourceLine" id="cb72-5" title="5"><span class="kw">set.seed</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb72-6" title="6"><span class="kw">boot</span>(Boston, mu10_boot, <span class="dv">500</span>)</a></code></pre></div>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = Boston, statistic = mu10_boot, R = 500)
+## 
+## 
+## Bootstrap Statistics :
+##     original  bias    std. error
+## t1*    12.75  0.0159   0.5163288</code></pre>
+<p>The estimated standard error is 0.52.</p>
 </div>
 </div>
 </article>

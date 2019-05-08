@@ -209,6 +209,7 @@ code > span.ot { color: #007020; }
 <li><p><code>I()</code></p></li>
 <li><p><code>contrasts()</code></p></li>
 <li><p><code>factor(, ordered=TRUE)</code></p></li>
+<li><p><code>coef()</code></p></li>
 </ul>
 </div>
 <div id="confit" class="section level2">
@@ -326,7 +327,7 @@ code > span.ot { color: #007020; }
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">samplemean &lt;-<span class="st"> </span><span class="cf">function</span>(x, d) {</a>
 <a class="sourceLine" id="cb9-2" title="2">  <span class="kw">return</span>(<span class="kw">mean</span>(x[d]))</a>
 <a class="sourceLine" id="cb9-3" title="3">}</a></code></pre></div>
-<p>The estimation function takes data <code>x</code> and a vector of indices <code>d</code> as inputs. This function will be called many times, one for each bootstrap replication. Every time, the data <code>x</code> will be the same, and the bootstrap sample <code>d</code> will be different.</p>
+<p>This function takes data <code>x</code> and a vector of indices <code>d</code> as inputs. This function will be called many times, one for each bootstrap replication. Every time, the data <code>x</code> will be the same, and the bootstrap sample <code>d</code> will be different. The function outputs an estimate of the required statistic (in this case the mean) found using the <code>d</code> selected observations.</p>
 <ul>
 <li><p><code>R</code>: Number of bootstrap replicates.</p></li>
 <li><p>… Additional parameters to be passed to the function that produces the statistic of interest</p></li>
@@ -334,7 +335,7 @@ code > span.ot { color: #007020; }
 </div>
 <div id="outputs-1" class="section level3">
 <h3>Outputs</h3>
-<p>The bootobject structure includes:</p>
+<p>The <code>bootobject</code> structure includes:</p>
 <ul>
 <li><p><code>t0</code>: The observed values of <code>k</code> statistics applied to the orginal data. Can be accessed using <code>bootobject$t0</code>.</p></li>
 <li><p><code>t</code>: An <code>R</code> x <code>k</code> matrix where each row is a bootstrap replicate of the <code>k</code> statistics. Can be accessed using <code>bootobject$t</code>.</p></li>
@@ -353,6 +354,9 @@ code > span.ot { color: #007020; }
 <li>Table styles: <code>kable(data) %&gt;%   kable_styling(bootstrap_options = &quot;striped&quot;, full_width = F)</code></li>
 </ul>
 <p>Source: <a href="https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html" class="uri">https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html</a></p>
+<ul>
+<li><code>quantile()</code></li>
+</ul>
 </div>
 </div>
 </article>
