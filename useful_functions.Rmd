@@ -133,6 +133,8 @@ Source: Rdocumentation
 
 - `factor(, ordered=TRUE)`
 
+- `coef()`
+
 ## `confit`
 
 Computes confidence intervals for one or more parameters in a fitted model. 
@@ -263,3 +265,48 @@ Sources:
 
 ## boot()
 
+`bootobject <- boot(data = , statistic = , R = , ...)`
+
+Used to bootstrap a single statistic or a vector. `boot( )` calls the `statistic` function `R` times. Each time, it generates a set of random indices, with replacement, from the integers `1:nrow(data)`. These indices are used within the `statistic` function to select a sample. 
+
+### Inputs
+
+- `data`: A vector, matrix, or data frame.
+
+- `statistic`:	A function that produces the k statistics to be bootstrapped (k=1 if bootstrapping a single statistic). The function should include an indices parameter that the `boot()` function can use to select cases for each replication. For example:
+
+```{r, eval=FALSE}
+samplemean <- function(x, d) {
+  return(mean(x[d]))
+}
+```
+
+This function takes data `x` and a vector of indices `d` as inputs. This function will be called many times, one for each bootstrap replication. Every time, the data `x` will be the same, and the bootstrap sample `d` will be different. The function outputs an estimate of the required statistic (in this case the mean) found using the `d` selected observations.
+
+- `R`: Number of bootstrap replicates.
+
+- ...	Additional parameters to be passed to the function that produces the statistic of interest
+
+### Outputs
+
+The `bootobject` structure includes:
+
+- `t0`: The observed values of `k` statistics applied to the orginal data. Can be accessed using `bootobject$t0`.
+
+- `t`: An `R` x `k` matrix where each row is a bootstrap replicate of the `k` statistics. Can be accessed using `bootobject$t`.
+
+`print(bootobject)` and `plot(bootobject)` can be used to examine the results and you can use `boot.ci( )` to obtain confidence intervals for the statistic(s).
+
+Sources:
+
+- https://www.statmethods.net/advstats/bootstrapping.html
+
+- http://www.mayin.org/ajayshah/KB/R/documents/boot.html
+
+
+## Other Notes
+
+- Table styles:
+`kable(data) %>%   kable_styling(bootstrap_options = "striped", full_width = F)`
+
+Source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html

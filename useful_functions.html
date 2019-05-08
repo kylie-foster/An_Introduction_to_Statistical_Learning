@@ -315,6 +315,44 @@ code > span.ot { color: #007020; }
 </div>
 <div id="boot" class="section level2">
 <h2>boot()</h2>
+<p><code>bootobject &lt;- boot(data = , statistic = , R = , ...)</code></p>
+<p>Used to bootstrap a single statistic or a vector. <code>boot( )</code> calls the <code>statistic</code> function <code>R</code> times. Each time, it generates a set of random indices, with replacement, from the integers <code>1:nrow(data)</code>. These indices are used within the <code>statistic</code> function to select a sample.</p>
+<div id="inputs-1" class="section level3">
+<h3>Inputs</h3>
+<ul>
+<li><p><code>data</code>: A vector, matrix, or data frame.</p></li>
+<li><p><code>statistic</code>: A function that produces the k statistics to be bootstrapped (k=1 if bootstrapping a single statistic). The function should include an indices parameter that the <code>boot()</code> function can use to select cases for each replication. For example:</p></li>
+</ul>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">samplemean &lt;-<span class="st"> </span><span class="cf">function</span>(x, d) {</a>
+<a class="sourceLine" id="cb9-2" title="2">  <span class="kw">return</span>(<span class="kw">mean</span>(x[d]))</a>
+<a class="sourceLine" id="cb9-3" title="3">}</a></code></pre></div>
+<p>The estimation function takes data <code>x</code> and a vector of indices <code>d</code> as inputs. This function will be called many times, one for each bootstrap replication. Every time, the data <code>x</code> will be the same, and the bootstrap sample <code>d</code> will be different.</p>
+<ul>
+<li><p><code>R</code>: Number of bootstrap replicates.</p></li>
+<li><p>… Additional parameters to be passed to the function that produces the statistic of interest</p></li>
+</ul>
+</div>
+<div id="outputs-1" class="section level3">
+<h3>Outputs</h3>
+<p>The bootobject structure includes:</p>
+<ul>
+<li><p><code>t0</code>: The observed values of <code>k</code> statistics applied to the orginal data. Can be accessed using <code>bootobject$t0</code>.</p></li>
+<li><p><code>t</code>: An <code>R</code> x <code>k</code> matrix where each row is a bootstrap replicate of the <code>k</code> statistics. Can be accessed using <code>bootobject$t</code>.</p></li>
+</ul>
+<p><code>print(bootobject)</code> and <code>plot(bootobject)</code> can be used to examine the results and you can use <code>boot.ci( )</code> to obtain confidence intervals for the statistic(s).</p>
+<p>Sources:</p>
+<ul>
+<li><p><a href="https://www.statmethods.net/advstats/bootstrapping.html" class="uri">https://www.statmethods.net/advstats/bootstrapping.html</a></p></li>
+<li><p><a href="http://www.mayin.org/ajayshah/KB/R/documents/boot.html" class="uri">http://www.mayin.org/ajayshah/KB/R/documents/boot.html</a></p></li>
+</ul>
+</div>
+</div>
+<div id="other-notes-2" class="section level2">
+<h2>Other Notes</h2>
+<ul>
+<li>Table styles: <code>kable(data) %&gt;%   kable_styling(bootstrap_options = &quot;striped&quot;, full_width = F)</code></li>
+</ul>
+<p>Source: <a href="https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html" class="uri">https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html</a></p>
 </div>
 </div>
 </article>
