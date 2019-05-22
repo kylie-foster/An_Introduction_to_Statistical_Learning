@@ -1,0 +1,50 @@
+---
+title: "An Introduction to Statistical Learning: Chapter 8 Applied Exercises"
+author: "Kylie Foster"
+date: "22 May 2019"
+output: 
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+---
+
+
+```{r setup, include=FALSE}
+library(tidyverse) # loads packages including ggplot2, dplyr
+library(tree) # for classification and regression trees
+library(ISLR) # data sets for the ISLR book. Contains the Carseats data set
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## 8.3.1 Fitting Classification Trees
+
+```{r loading_data}
+# Using the Carseats data set from the ISLR library
+
+# creating binary variable that is Yes if Sales exceeds 8
+Carseats <- mutate(Carseats, High = as.factor(ifelse(Sales <= 8, "No", "Yes"))) # creating binary variable that i sYes if Sales exceeds 8
+
+# Using the tree() function to fit a classification tree to predict High using all variables except Sales
+tree_carseats <- tree(High ~. - Sales, Carseats)
+
+# summary() listst the variables that are used as internal nodes, the number of terminal noede, and the training error.
+summary(tree_carseats)
+```
+
+The training error rate is 9%.
+
+A small deviance indicates a tree that provides a good fit to the training data.
+
+```{r plot_tree}
+
+plot(tree_carseats) # plotting tree
+text(tree_carseats, pretty = 0) # displays the node labels, 
+# pretty = 0 ensures category names for qualitative predictors are included.
+
+
+```
+The most important indicator of `Sales` appears to be shelving location,
+since the first branch differentiates `Good` locations from `Bad` and `Medium`
+locations.

@@ -1,0 +1,42 @@
+---
+title: "An Introduction to Statistical Learning: Chapter 8 Useful Functions"
+author: "Kylie Foster"
+date: "22 May 2019"
+output: 
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+library(tree) # for classification and regression trees
+library(tidyverse) # loads packages including ggplot2, dplyr
+library(ISLR) # data sets for the ISLR book. Contains the Carseats data set
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## tree()
+
+`tree(formula, data, weights, subset,
+     na.action = na.pass, control = tree.control(nobs, ...),
+     method = "recursive.partition",
+     split = c("deviance", "gini"),
+     model = FALSE, x = FALSE, y = TRUE, wts = TRUE, ...)`
+     
+
+A tree is grown by binary recursive partitioning using the response (Y) in the specified formula and choosing splits from the terms of the right-hand-side (the predictors).
+
+### Inputs
+
+- `formula`: A formula expression. The left-hand-side (response) can be either a *numerical* vector (for a regression tree) or a *factor* (for a classification tree). The syntax is similar to `lm()`, so the right-hand-side should be a series of numeric or factor variables separated by `+`, both `.` and `-` are allowed. But interaction terms are not allowed.
+
+
+### Outputs
+
+
+
+Sources:
+
+- https://www.rdocumentation.org/packages/tree/versions/1.0-40/topics/tree
