@@ -45,6 +45,55 @@ text(tree_carseats, pretty = 0) # displays the node labels,
 
 
 ```
+
 The most important indicator of `Sales` appears to be shelving location,
 since the first branch differentiates `Good` locations from `Bad` and `Medium`
 locations.
+
+If we just type the name of the tree object, R prints output corresponding
+to each branch of the tree:
+
+- the split criterion 
+
+- the number of observations in that branch
+
+- the deviance
+
+- the overall prediction for the branch (`Yes` or `No`)
+
+- the fraction of observations in that branch that take on values of `Yes` and `No`. 
+
+- Branches that lead to terminal nodes areindicated using asterisks.
+
+```{r}
+tree_carseats
+```
+
+```{r}
+set.seed(2, sample.kind = "Rounding") # the second term is needed in newer version of 
+# R to reproduce the results in the textbook due to changes to set.seed and its use 
+# with sample()
+train <- sample(1:nrow(Carseats), 200) # vector specifying the index to use 
+# to select 200 observations for the training set.
+Carseats_test <- Carseats[-train, ] # selecting test set
+tree_carseats <- tree(High ~. -Sales, Carseats, subset = train) # building tree model
+tree_pred <- predict(tree_carseats, Carseats_test, type = "class") # finding predictions on test set.
+# use argument type = "class" to tell R to return the actual class prediction 
+table(tree_pred, Carseats_test$High) # confusion matrix
+```
+
+```{r}
+set.seed(3)
+cv_carseats <- cv.tree(tree_carseats, FUN = prune.misclass) # tree_carseats is the tree object above
+# use the argument FUN=prune.misclass in order to indicate that we want the
+# classification error rate to guide the cv and pruning process,
+# rather than the default, deviance
+names(cv_carseats)
+cv_carseats
+
+# plotting error rate as a function of both size and k
+par(mfrow = c(1,2))
+plot(cv_carseats$size, cv_carseats$dev, type = "b")
+plot(cv_carseats$k, cv_carseats$dev, type = "b")
+```
+

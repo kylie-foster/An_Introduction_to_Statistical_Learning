@@ -36,7 +36,25 @@ A tree is grown by binary recursive partitioning using the response (Y) in the s
 ### Outputs
 
 
+predict(), use argument type = "class" to tell R to return the actual class prediction
+
+
 
 Sources:
 
 - https://www.rdocumentation.org/packages/tree/versions/1.0-40/topics/tree
+
+## cv.tree()
+
+performs cross-validation in order to determine the optimal level of tree complexity
+
+
+### Outputs
+
+- `size`: the number of terminal nodes of each tree considered.
+
+- `dev`: the error rate for each tree considered. CHECK
+
+- `k`: the value of the cost-complexity parameter used. 
+
+$\Sigma_{m=1}^{|T|}\Sigma_{x_i\in R_m}(y_i-\hat{y}_{R_m}) + k|T|$. $|T|$ is the number of terminal nodes of the tree T, $R_m$ is the rectangle (sugset of predictor space) corresponding to the $m$th terminal node, and $\hat{y}_{R_m}$ is the predicted response associated with $R_m$. The tuning parameter $k$ controls the trade-off between the subtree's complexity and its fit to the training data.
